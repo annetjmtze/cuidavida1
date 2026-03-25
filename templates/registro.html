@@ -1,0 +1,120 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro - CuidaVida</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+body { font-family: 'Poppins', sans-serif; }
+</style>
+</head>
+
+<body class="bg-gradient-to-br from-blue-500 to-blue-700 min-h-screen flex items-center justify-center">
+
+<div class="bg-white rounded-2xl shadow-xl p-8 w-80">
+
+<!-- Logo -->
+<div class="flex flex-col items-center mb-6">
+<div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white text-2xl mb-2">
+<i class="fas fa-heart"></i>
+</div>
+<h1 class="text-2xl font-bold text-gray-800">CuidaVida</h1>
+<p class="text-gray-500 text-sm">Crear nueva cuenta</p>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+
+<!-- Foto -->
+<div class="mb-4">
+<label class="text-gray-600 text-sm">Foto de perfil</label>
+<input
+type="file"
+name="foto"
+class="w-full mt-1">
+</div>
+
+<!-- Usuario -->
+<div class="mb-4">
+<label class="text-gray-600 text-sm">Usuario</label>
+<div class="flex items-center border rounded-lg px-3 py-2 mt-1">
+<i class="fas fa-user text-gray-400 mr-2"></i>
+<input
+type="text"
+name="username"
+placeholder="Ingresa un usuario"
+class="w-full outline-none"
+required>
+</div>
+</div>
+
+<!-- Nombre -->
+<div class="mb-4">
+<label class="text-gray-600 text-sm">Nombre completo</label>
+<div class="flex items-center border rounded-lg px-3 py-2 mt-1">
+<i class="fas fa-id-card text-gray-400 mr-2"></i>
+<input
+type="text"
+name="nombre"
+placeholder="Ingresa tu nombre"
+class="w-full outline-none"
+required>
+</div>
+</div>
+
+<!-- Contraseña -->
+<div class="mb-4">
+<label class="text-gray-600 text-sm">Contraseña</label>
+<div class="flex items-center border rounded-lg px-3 py-2 mt-1">
+<i class="fas fa-lock text-gray-400 mr-2"></i>
+<input
+type="password"
+name="password"
+placeholder="Crea una contraseña"
+class="w-full outline-none"
+required>
+</div>
+</div>
+
+<!-- Tipo de usuario -->
+<div class="mb-4">
+<label class="text-gray-600 text-sm">Tipo de usuario</label>
+<div class="flex items-center border rounded-lg px-3 py-2 mt-1">
+<i class="fas fa-user-tag text-gray-400 mr-2"></i>
+<select name="tipo" class="w-full outline-none" required>
+    <option value="">Selecciona tipo</option>
+    <option value="paciente">Paciente</option>
+    <option value="medico">Médico</option>
+</select>
+</div>
+</div>
+
+<!-- Botón -->
+<button
+type="submit"
+class="w-full bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition">
+Registrarse
+</button>
+
+</form>
+
+<p class="text-center text-sm text-gray-500 mt-4">
+¿Ya tienes cuenta?
+<a href="/login/" class="text-blue-600 font-semibold hover:underline">
+Iniciar sesión
+</a>
+</p>
+
+</div>
+
+</body>
+</html>
+```
+
