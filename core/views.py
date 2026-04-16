@@ -102,6 +102,7 @@ def login_view(request):
 def dashboard(request):
 
     perfil = request.user.perfil  # obtiene si es paciente o médico
+    print(dict(request.session))
 
     if perfil.tipo == 'medico':
         return render(request, 'prototipo_medico.html')

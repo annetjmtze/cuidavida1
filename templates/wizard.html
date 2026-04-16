@@ -59,6 +59,10 @@ class="w-24 h-24 rounded-full object-cover border-4 border-blue-500 mb-2">
 
 <input name="nombre" class="w-full p-3 border rounded-xl mb-3" placeholder="Nombre completo">
 
+<!-- PRIMERA VALIDACIÓNAQUÍ ESTÁ EL CAMPO EN DONDE SE PIDE LA CURP-->
+
+<input name="curp" class="w-full p-3 border rounded-xl mb-3 uppercase" placeholder="CURP" pattern="^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9][0-9]$" title="Ingrese una CURP válida (18 caracteres)" required oninput="this.value = this.value.toUpperCase()">
+
 <input edad="edad" type="number" class="w-full p-3 border rounded-xl mb-3" placeholder="Edad">
 
 <select name="sexo" class="w-full p-3 border rounded-xl mb-3">
@@ -75,9 +79,6 @@ class="w-24 h-24 rounded-full object-cover border-4 border-blue-500 mb-2">
 <option>A+</option>
 <option>B+</option>
 </select>
-
-request.session["edad"] = edad
-request.session["tipo_sangre"] = tipo_sangre
 
 </div>
 
@@ -110,7 +111,12 @@ request.session["tipo_sangre"] = tipo_sangre
 
 <input name="telefono" class="w-full p-3 border rounded-xl mb-3" placeholder="Teléfono">
 
-<input name="correo" type="email" class="w-full p-3 border rounded-xl mb-3" placeholder="Correo">
+<!--VALIDACIÓN CORREO--------------------------------------------
+AQUÍ ESTÁ LA SEGUNDA VALIDACIÓN, EL CORREO ELECTRÓNICO, PRIMERO QUE  NADA SE LE ASIGNA UN ID AL CAMPO-->
+<input id="email_input" name="correo" type="email" class="w-full p-3 border rounded-xl" placeholder="Correo">
+<!--LUEGO SE AGREGA EL SPAN QUE ES EL MENSAJE DE ERROR QUE VA A MARCAR SI NO ES CORRECTO
+EL SPAN TAMBIÉN TIENE ID-->
+<p id="email_error" class="text-red-500 text-xs mt-1 mb-3 hidden">Por favor, ingresa un correo electrónico válido.</p>
 
 <select name="estado" class="w-full p-3 border rounded-xl mb-3">
 <option>Estado</option>
@@ -175,6 +181,17 @@ bar.classList.toggle("bg-gray-200", i > currentStep);
 }
 
 document.getElementById("next").onclick = () => {
+    // Validar campos del paso actual
+    const inputs = steps[currentStep].querySelectorAll("input, select, textarea");
+    let stepValid = true;
+    inputs.forEach(input => {
+        if (!input.checkValidity()) {
+            input.reportValidity();
+            stepValid = false;
+        }
+    });
+    if (!stepValid) return;
+
 if(currentStep < steps.length - 1){
 currentStep++;
 updateUI();
@@ -211,6 +228,30 @@ checks.forEach(c => {
 c.addEventListener("change", () => {
 ninguna.checked = false;
 });
+});
+
+//VALIDACIÓN DEL CORREO---------------------------------------
+// PARA VALIDAR EL CORREO VAMOS A USAR UN REGEX, QUE ES UNA EXPRESIÓN REGULAR
+//CREAMOS LAS VARIABLES EN DONDE VA A TENER EL CORREO
+const emailInput = document.getElementById("email_input");
+const emailError = document.getElementById("email_error");
+
+//PARA CREAR LA FUNCIÓN
+function validarCorreo(email) {
+    // Patrón estándar de correo electrónico
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+//AHORA ESTE LISTENER ES PARA QUE SEA EN TIEMPO REAL, MIENTRAS LO ESCRIBE, NO HASTA QUE LO ENVIA
+emailInput.addEventListener("input", (e) => {
+    //EL E TARGET ES LO QUE EL USUARIO ESCRIBIÓ
+    if (validarCorreo(e.target.value) || e.target.value === "") {//VALIDA O SI ESTÁ VACÍO
+        emailError.classList.add("hidden");//SI TODO ESTÁ BIEN O VACIO NO MUESTRA ERROR
+        emailInput.classList.remove("border-red-500");
+    } else {//SI NO, SI MOSTRAR EL ERROR
+        emailError.classList.remove("hidden");
+        emailInput.classList.add("border-red-500");
+    }
 });
 
 </script>
