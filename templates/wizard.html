@@ -56,14 +56,25 @@ class="w-24 h-24 rounded-full object-cover border-4 border-blue-500 mb-2">
 
 <input type="file" name="foto" accept="image/*" onchange="previewImage(event)" class="text-sm">
 </div>
+<!--1. PRIMERA VALIDACIÓN SENCILLA, NOMBRE COMPLETO EXTENSIÓN MÁXIMA DE 100, MINIMA DE 2
+AQUÍ ES SENCILLO PORQUE ES DENTRO DEL INPUT, NO NECESITA FUNCIONES-->
+<input name="nombre" class="w-full p-3 border rounded-xl mb-3" placeholder="Nombre completo" maxlength="100" minlength="2">
 
-<input name="nombre" class="w-full p-3 border rounded-xl mb-3" placeholder="Nombre completo">
+<!-- 2. SEGUNDA VALIDACIÓNAQUÍ ESTÁ EL CAMPO EN DONDE SE PIDE LA CURP
+ AQUÍ ASIGNAMOS UN ID, SOLICITAMOS EL DATO, Y CREAMOS UN SPAN PARA MOSTRAR EL MENSAJE DE ERROR EN CASO DE
+ NO INGRESAR ALGO VÁLIDO-->
+<input id="curp_input" name="curp" class="w-full p-3 border rounded-xl uppercase" placeholder="CURP" required>
+<p id="curp_error" class="text-red-500 text-xs mt-1 mb-3 hidden">Ingrese una CURP válida (18 caracteres).</p>
 
-<!-- PRIMERA VALIDACIÓNAQUÍ ESTÁ EL CAMPO EN DONDE SE PIDE LA CURP-->
+<!-- TERCERA VALIDACIÓN, FECHA DE NACIMIENTO COINCIDA CON LA EDAD -->
+ <!--AQUÍ LO QUE VA  HACER ES QQUE VA A INGRESAR LA FECHA DE NACIMIENTO EN UN CAMPO TIPO FECHA
+ VA A CALCULAR LA EDAD Y SI NO COINCIDE, MARCRÁ EL ERROR
+ AQUÍ SOLO PEDIMOS LOS DATOS-->
+<label class="text-xs text-gray-500 ml-1">Fecha de nacimiento</label>
+<input id="fecha_nacimiento" name="fecha_nacimiento" type="date" class="w-full p-3 border rounded-xl mb-3" required>
 
-<input name="curp" class="w-full p-3 border rounded-xl mb-3 uppercase" placeholder="CURP" pattern="^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9][0-9]$" title="Ingrese una CURP válida (18 caracteres)" required oninput="this.value = this.value.toUpperCase()">
-
-<input edad="edad" type="number" class="w-full p-3 border rounded-xl mb-3" placeholder="Edad">
+<input id="edad_input" name="edad" type="number" class="w-full p-3 border rounded-xl" placeholder="Edad" required>
+<p id="age_error" class="text-red-500 text-xs mt-1 mb-3 hidden">La edad ingresada no coincide con la fecha de nacimiento.</p>
 
 <select name="sexo" class="w-full p-3 border rounded-xl mb-3">
 <option>Selecciona sexo</option>
@@ -192,6 +203,11 @@ document.getElementById("next").onclick = () => {
     });
     if (!stepValid) return;
 
+    // VALIDACIÓN EXTRA: Verificar que la edad coincida con la fecha de nacimiento
+    if (currentStep === 0 && !validarEdadMatch()) {
+        return;
+    }
+
 if(currentStep < steps.length - 1){
 currentStep++;
 updateUI();
@@ -236,6 +252,26 @@ ninguna.checked = false;
 const emailInput = document.getElementById("email_input");
 const emailError = document.getElementById("email_error");
 
+// VALIDACIÓN DE CURP
+const curpInput = document.getElementById("curp_input");
+const curpError = document.getElementById("curp_error");
+
+function validarCURP(curp) {
+    const regex = /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9][0-9]$/;
+    return regex.test(curp);
+}
+
+curpInput.addEventListener("input", (e) => {
+    e.target.value = e.target.value.toUpperCase();
+    if (validarCURP(e.target.value) || e.target.value === "") {
+        curpError.classList.add("hidden");
+        curpInput.classList.remove("border-red-500");
+    } else {
+        curpError.classList.remove("hidden");
+        curpInput.classList.add("border-red-500");
+    }
+});
+
 //PARA CREAR LA FUNCIÓN
 function validarCorreo(email) {
     // Patrón estándar de correo electrónico
@@ -253,6 +289,45 @@ emailInput.addEventListener("input", (e) => {
         emailInput.classList.add("border-red-500");
     }
 });
+
+// VALIDACIÓN DE EDAD VS FECHA DE NACIMIENTO
+const dobInput = document.getElementById("fecha_nacimiento");
+const ageInput = document.getElementById("edad_input");
+const ageError = document.getElementById("age_error");
+
+function calcularEdad(fecha) {
+    const hoy = new Date();
+    const cumple = new Date(fecha);
+    let edad = hoy.getFullYear() - cumple.getFullYear();
+    const m = hoy.getMonth() - cumple.getMonth();//CALCULA LA EDAD RESTANDO HOY MENOS FECHA DE NACIMIENTP
+    // Si el mes actual es menor al mes de cumple, o es el mismo mes pero el día es menor
+    if (m < 0 || (m === 0 && hoy.getDate() < cumple.getDate())) {
+        edad--;
+    }
+    return edad;
+}
+
+function validarEdadMatch() {
+    if (!dobInput.value || !ageInput.value) return true;//SI ESTÁ VACÍO, NO MARCA NINGÚN ERROR 
+    
+    const edadCalculada = calcularEdad(dobInput.value);
+    const edadIngresada = parseInt(ageInput.value);
+    const coinciden = edadCalculada === edadIngresada;
+
+    ageError.classList.toggle("hidden", coinciden);// AQUÍ LO QUE HACE ES MOSTRAR U OCULTAR EL MENSAJE DE ERROR 
+    ageInput.classList.toggle("border-red-500", !coinciden);
+    return coinciden;
+}
+
+// Cuando cambie la fecha, calcular la edad automáticamente
+dobInput.addEventListener("change", () => {
+    if (dobInput.value) {
+        ageInput.value = calcularEdad(dobInput.value);
+        validarEdadMatch();
+    }
+});
+//AQUÍ SE CREA EL EVENTO O EL ONGOING PARA QUE LO VALIDE EN TIEMPO REAL Y NO SE ESPERE A QUE SE ENVIE
+ageInput.addEventListener("input", validarEdadMatch);
 
 </script>
 
