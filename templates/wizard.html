@@ -129,11 +129,16 @@ AQUÍ ESTÁ LA SEGUNDA VALIDACIÓN, EL CORREO ELECTRÓNICO, PRIMERO QUE  NADA SE
 EL SPAN TAMBIÉN TIENE ID-->
 <p id="email_error" class="text-red-500 text-xs mt-1 mb-3 hidden">Por favor, ingresa un correo electrónico válido.</p>
 
-<select name="estado" class="w-full p-3 border rounded-xl mb-3">
-<option>Estado</option>
-<option>Michoacán</option>
-<option>CDMX</option>
-<option>Jalisco</option>
+<!-- VALIDACIÓN CÓDIGO POSTAL MÉXICO -->
+<input id="cp_input" name="cp" class="w-full p-3 border rounded-xl mb-3" placeholder="Código Postal (5 dígitos)" maxlength="5">
+<p id="cp_error" class="text-red-500 text-xs mt-1 mb-3 hidden">Código postal no válido.</p>
+
+<input id="estado_input" name="estado" class="w-full p-3 border rounded-xl mb-3 bg-gray-50" placeholder="Estado" readonly>
+
+<input id="municipio_input" name="municipio" class="w-full p-3 border rounded-xl mb-3 bg-gray-50" placeholder="Municipio" readonly>
+
+<select id="colonia_select" name="colonia" class="w-full p-3 border rounded-xl mb-3">
+    <option value="">Selecciona Colonia</option>
 </select>
 
 <input name="direccion" class="w-full p-3 border rounded-xl" placeholder="Dirección">
@@ -328,6 +333,40 @@ dobInput.addEventListener("change", () => {
 });
 //AQUÍ SE CREA EL EVENTO O EL ONGOING PARA QUE LO VALIDE EN TIEMPO REAL Y NO SE ESPERE A QUE SE ENVIE
 ageInput.addEventListener("input", validarEdadMatch);
+
+//MUCHAS DUDAS AQUIIIIIIIIIIIIII-----------------------------------------------
+// LÓGICA DE BÚSQUEDA DE CP
+const cpInput = document.getElementById("cp_input");
+const estadoInput = document.getElementById("estado_input");
+const municipioInput = document.getElementById("municipio_input");
+const coloniaSelect = document.getElementById("colonia_select");
+const cpError = document.getElementById("cp_error");
+
+cpInput.addEventListener("input", (e) => {
+    const cp = e.target.value;
+    if (cp.length === 5) {
+        fetch(`/buscar-cp/?cp=${cp}`)
+            .then(response => response.json())
+            .then(res => {
+                if (res.success) {
+                    cpError.classList.add("hidden");
+                    estadoInput.value = res.data.estado;
+                    municipioInput.value = res.data.municipio;
+                    
+                    // Limpiar y llenar colonias
+                    coloniaSelect.innerHTML = '<option value="">Selecciona Colonia</option>';
+                    res.data.colonias.forEach(col => {
+                        const opt = document.createElement("option");
+                        opt.value = col;
+                        opt.textContent = col;
+                        coloniaSelect.appendChild(opt);
+                    });
+                } else {
+                    cpError.classList.remove("hidden");
+                }
+            });
+    }
+});
 
 </script>
 

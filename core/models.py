@@ -38,3 +38,12 @@ class Medico(models.Model):
 
     def __str__(self):
         return self.nombre
+
+# 🔹 Modelo para Base de Datos de SEPOMEX (México)
+class CodigoPostal(models.Model):
+    codigo = models.CharField(max_length=5)
+    asentamiento = models.CharField(max_length=100) # Colonia
+    tipo_asentamiento = models.CharField(max_length=50)
+    municipio = models.CharField(max_length=100)
+    estado = models.CharField(max_length=100)
+    ciudad = models.CharField(max_length=100, blank=True, null=True)

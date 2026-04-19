@@ -28,4 +28,5 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('registro/', views.registro, name='registro'),
     path('logout/', views.logout_view, name='logout'),
+    path('buscar-cp/', views.buscar_cp, name='buscar_cp'),
 ]

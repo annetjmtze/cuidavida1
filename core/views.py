@@ -3,9 +3,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-
+from django.http import JsonResponse
+#DEBEMOS CREAR UNA VISTA EN DJANGO QUE RECIBA UN CP, Y LO CONVIERTA A INFORMACIÓ GEOGRÁFUCA EN JSON
 # 🔹 IMPORTAR MODELOS
-from .models import Perfil, Paciente, Medico
+from .models import Perfil, Paciente, Medico, CodigoPostal
 
 
 # 🔹 LOGOUT
@@ -108,3 +109,18 @@ def dashboard(request):
         return render(request, 'prototipo_medico.html')
     else:
         return render(request, 'prototipo.html')
+
+# 🔹 API PARA VALIDAR CÓDIGO POSTAL
+def buscar_cp(request):
+    cp = request.GET.get('cp')
+    resultados = CodigoPostal.objects.filter(codigo=cp)
+    
+    if resultados.exists():
+        data = {
+            'estado': resultados[0].estado,
+            'municipio': resultados[0].municipio,
+            'colonias': [r.asentamiento for r in resultados]
+        }
+        return JsonResponse({'success': True, 'data': data})
+    
+    return JsonResponse({'success': False, 'error': 'Código postal no encontrado'})
