@@ -45,6 +45,7 @@ def registro(request):
         password = request.POST['password']
         nombre = request.POST['nombre']
         tipo = request.POST['tipo']
+        cedula = request.POST.get('cedula', '')
 
         # Crear usuario
         user = User.objects.create_user(username=username, password=password)
@@ -66,7 +67,9 @@ def registro(request):
                 user=user,
                 nombre=nombre,
                 especialidad='',
-                telefono=''
+                telefono='',
+                direccion='',
+                cedula=cedula
             )
 
         return redirect('login')
@@ -103,16 +106,21 @@ def login_view(request):
 def dashboard(request):
 
     perfil = request.user.perfil  # obtiene si es paciente o médico
-    print(dict(request.session))
+    print("hola",dict(request.session))
 
     if perfil.tipo == 'medico':
         return render(request, 'prototipo_medico.html')
     else:
         return render(request, 'prototipo.html')
-
+#MUCHAS DUDAS AQUÍ-----------------------------------------------
 # 🔹 API PARA VALIDAR CÓDIGO POSTAL
 def buscar_cp(request):
     cp = request.GET.get('cp')
+    cp = request.GET.get('cp', '').strip()
+    
+    # Esto aparecerá en tu terminal donde corres el server
+    print(f"--- Buscando CP: {cp} ---")
+    
     resultados = CodigoPostal.objects.filter(codigo=cp)
     
     if resultados.exists():

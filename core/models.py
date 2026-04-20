@@ -32,13 +32,14 @@ class Medico(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     nombre = models.CharField(max_length=100)
+    cedula = models.CharField(max_length=12, blank=True, null=True)
     especialidad = models.CharField(max_length=100)
     telefono = models.CharField(max_length=15)
     direccion = models.TextField()
 
     def __str__(self):
         return self.nombre
-
+#NECESITAMOS CREAR UNA TABLA EN LA BASE DE DATOS DONDE SE LAMECENE ESTOS DATOS 
 # 🔹 Modelo para Base de Datos de SEPOMEX (México)
 class CodigoPostal(models.Model):
     codigo = models.CharField(max_length=5)
