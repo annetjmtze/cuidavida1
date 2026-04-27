@@ -1,9 +1,9 @@
-
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.db import transaction
 #DEBEMOS CREAR UNA VISTA EN DJANGO QUE RECIBA UN CP, Y LO CONVIERTA A INFORMACIÓ GEOGRÁFUCA EN JSON
 # 🔹 IMPORTAR MODELOS
 from .models import Perfil, Paciente, Medico, CodigoPostal
@@ -47,30 +47,35 @@ def registro(request):
         tipo = request.POST['tipo']
         cedula = request.POST.get('cedula', '')
 
-        # Crear usuario
-        user = User.objects.create_user(username=username, password=password)
+        try:
+            with transaction.atomic():
+                # Crear usuario
+                user = User.objects.create_user(username=username, password=password)
 
-        # Crear perfil
-        perfil = Perfil.objects.create(user=user, tipo=tipo)
+                # Crear perfil
+                perfil = Perfil.objects.create(user=user, tipo=tipo)
 
-        # Crear paciente o médico según tipo
-        if tipo == 'paciente':
-            Paciente.objects.create(
-                user=user,
-                nombre=nombre,
-                edad=0,
-                telefono='',
-                direccion=''
-            )
-        else:
-            Medico.objects.create(
-                user=user,
-                nombre=nombre,
-                especialidad='',
-                telefono='',
-                direccion='',
-                cedula=cedula
-            )
+                # Crear paciente o médico según tipo
+                if tipo == 'paciente':
+                    Paciente.objects.create(
+                        user=user,
+                        nombre=nombre,
+                        edad=0,
+                        telefono='',
+                        direccion=''
+                    )
+                else:
+                    Medico.objects.create(
+                        user=user,
+                        nombre=nombre,
+                        especialidad='',
+                        telefono='',
+                        direccion='',
+                        cedula=cedula
+                    )
+        except Exception as e:
+            # Si algo falla (ej. cédula inválida), volvemos a mostrar el registro con el error
+            return render(request, 'registro.html', {'error': 'Hubo un error al registrar: ' + str(e)})
 
         return redirect('login')
 

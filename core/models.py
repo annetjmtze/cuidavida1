@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
 
 # 🔹 Perfil para definir tipo de usuario
 class Perfil(models.Model):
