@@ -28,5 +28,6 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('registro/', views.registro, name='registro'),
     path('logout/', views.logout_view, name='logout'),
+    #AGREGAR EL CAMPO PARA BUSCAR, REDIRECCIONAMIENTO
     path('buscar-cp/', views.buscar_cp, name='buscar_cp'),
 ]

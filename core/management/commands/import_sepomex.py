@@ -41,6 +41,11 @@ class Command(BaseCommand):
             for _, row in df.iterrows():
                 # Formateamos el CP para que siempre tenga 5 dígitos (ej. 01000)
                 cp_raw = str(row.get('d_codigo', ''))
+                
+                # Saltar si el CP está vacío o no es válido
+                if not cp_raw or cp_raw.lower() == 'nan' or cp_raw == '':
+                    continue
+
                 cp_limpio = cp_raw.split('.')[0].zfill(5)
                 
                 batch.append(CodigoPostal(
@@ -60,5 +65,6 @@ class Command(BaseCommand):
             if batch:
                 CodigoPostal.objects.bulk_create(batch)
                 total_importado += len(batch)
+            self.stdout.write(self.style.SUCCESS(f"Finalizado estado: {sheet_name}"))
 
         self.stdout.write(self.style.SUCCESS(f"Éxito: Se importaron {total_importado} registros correctamente."))

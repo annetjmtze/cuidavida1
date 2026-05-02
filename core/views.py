@@ -16,22 +16,42 @@ def logout_view(request):
 
 
 # 🔹 WIZARD (puedes luego conectarlo al paciente)
+@login_required
 def wizard(request):
-
     if request.method == "POST":
-
-        # datos del paso 1
-        nombre = request.POST.get("nombre")
-        correo = request.POST.get("correo")
-
-        # datos del paso 2
-        usuario = request.POST.get("usuario")
-        password = request.POST.get("password")
-
-        print(nombre, correo, usuario)
-
-        # aquí puedes guardar en la base de datos
-
+        try:
+            # Obtenemos el perfil del paciente del usuario actual
+            paciente = request.user.paciente
+            
+            # Asignamos los datos del formulario al objeto paciente
+            paciente.nombre = request.POST.get("nombre")
+            paciente.edad = request.POST.get("edad")
+            paciente.curp = request.POST.get("curp")
+            paciente.fecha_nacimiento = request.POST.get("fecha_nacimiento")
+            paciente.sexo = request.POST.get("sexo")
+            paciente.tipo_sangre = request.POST.get("tipo_sangre")
+            
+            # Para las enfermedades (checkboxes), usamos getlist
+            enfermedades = request.POST.getlist("enfermedades")
+            paciente.enfermedades = ", ".join(enfermedades)
+            
+            paciente.antecedentes = request.POST.get("antecedentes")
+            paciente.medicamentos = request.POST.get("medicamentos")
+            paciente.telefono = request.POST.get("telefono")
+            paciente.cp = request.POST.get("cp")
+            paciente.estado = request.POST.get("estado")
+            paciente.municipio = request.POST.get("municipio")
+            paciente.colonia = request.POST.get("colonia")
+            paciente.direccion = request.POST.get("direccion")
+            paciente.hospital = request.POST.get("hospital")
+            paciente.num_seguro = request.POST.get("seguro")
+            
+            # Guardamos los cambios en la base de datos
+            paciente.save()
+            
+        except Exception as e:
+            print(f"Error al guardar el wizard: {e}")
+            
         return redirect("dashboard")
 
     return render(request, "wizard.html")
@@ -96,8 +116,8 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
+            # VALIDACIÓN DE DATOS EN BACKEND
             return redirect('dashboard')
-
         else:
             return render(request, 'login.html', {
                 'error': 'Usuario o contraseña incorrectos'
@@ -109,14 +129,28 @@ def login_view(request):
 # 🔹 DASHBOARD (REDIRECCIÓN SEGÚN TIPO 🔥)
 @login_required
 def dashboard(request):
-
-    perfil = request.user.perfil  # obtiene si es paciente o médico
-    print("hola",dict(request.session))
+    try:
+        # Intentamos obtener el perfil
+        perfil = request.user.perfil 
+    except Exception:
+        # Si el usuario no tiene perfil (ej. es un Superusuario de la terminal)
+        if request.user.is_superuser:
+            return redirect('/admin/')
+        # Si es un usuario normal sin perfil, lo sacamos para evitar errores
+        logout(request)
+        return redirect('login')
 
     if perfil.tipo == 'medico':
         return render(request, 'prototipo_medico.html')
     else:
-        return render(request, 'prototipo.html')
+        # Obtenemos el objeto paciente para pasar sus datos al HTML
+        paciente = getattr(request.user, 'paciente', None)
+        context = {
+            'paciente': paciente,
+            'edad': paciente.edad if paciente else "N/A",
+            'tipo_sangre': paciente.tipo_sangre if paciente else "N/A",
+        }
+        return render(request, 'prototipo.html', context)
 #MUCHAS DUDAS AQUÍ-----------------------------------------------
 # 🔹 API PARA VALIDAR CÓDIGO POSTAL
 def buscar_cp(request):

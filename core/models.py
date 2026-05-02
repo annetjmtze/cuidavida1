@@ -25,6 +25,21 @@ class Paciente(models.Model):
     telefono = models.CharField(max_length=15)
     direccion = models.TextField()
 
+    # Campos adicionales para el Wizard
+    curp = models.CharField(max_length=18, blank=True, null=True)
+    fecha_nacimiento = models.DateField(blank=True, null=True)
+    sexo = models.CharField(max_length=20, blank=True, null=True)
+    tipo_sangre = models.CharField(max_length=5, blank=True, null=True)
+    enfermedades = models.TextField(blank=True, null=True)
+    antecedentes = models.TextField(blank=True, null=True)
+    medicamentos = models.TextField(blank=True, null=True)
+    cp = models.CharField(max_length=5, blank=True, null=True)
+    estado = models.CharField(max_length=100, blank=True, null=True)
+    municipio = models.CharField(max_length=100, blank=True, null=True)
+    colonia = models.CharField(max_length=100, blank=True, null=True)
+    hospital = models.CharField(max_length=100, blank=True, null=True)
+    num_seguro = models.CharField(max_length=50, blank=True, null=True)
+
     def __str__(self):
         return self.nombre
     

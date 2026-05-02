@@ -39,11 +39,10 @@
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen max-w-md mx-auto">
-    <a href="{% url 'logout' %}">Cerrar sesión</a>
     <!-- Header -->
     <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 sticky top-0 z-50">
         <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3" onclick="window.location.href='{% url 'dashboard' %}'">
                 <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
                     <i class="fas fa-heart text-red-500 text-xl"></i>
                 </div>
@@ -57,247 +56,242 @@
                     <i class="fas fa-bell text-lg"></i>
                     <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center">3</span>
                 </button>
-                <img src="https://ui-avatars.com/api/?name=Maria+Lopez&background=fff&color=2563eb&size=40" class="w-10 h-10 rounded-full border-2 border-white" alt="Perfil">
+                <div class="group relative">
+                    <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=fff&color=2563eb&size=40" class="w-10 h-10 rounded-full border-2 border-white cursor-pointer" alt="Perfil">
+                    <a href="{% url 'logout' %}" class="absolute right-0 mt-2 bg-white text-red-600 text-xs py-1 px-3 rounded shadow-lg hidden group-hover:block whitespace-nowrap">Cerrar Sesión</a>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="p-4 pb-24">
+    <main id="main-container" class="p-4 pb-24">
         
-        <!-- Patient Info Card -->
-        <section class="bg-white rounded-2xl p-4 card-shadow mb-4 slide-up">
-            <div class="flex items-center gap-4">
-                <img src="https://ui-avatars.com/api/?name=Abuelo+Carlos&background=10b981&color=fff&size=70" class="w-16 h-16 rounded-full" alt="Paciente">
-                <div class="flex-1">
-                   <h2 class="text-xl font-bold text-gray-800"> 
-                    {{ user.username }}
-                    </h2>
-                    <p class="text-gray-500">   {{ edad }} años • Tipo: {{ tipo_sangre }} </p>
-                    <div class="flex items-center gap-2 mt-1">
-                        <span class="w-3 h-3 bg-green-500 rounded-full pulse-animation"></span>
-                        <span class="text-green-600 text-sm font-medium">Estado: Estable</span>
-                    </div>
-                </div>
-                <button class="w-14 h-14 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-red-600 transition pulse-animation">
-                    <i class="fas fa-phone text-xl"></i>
-                </button>
-            </div>
-        </section>
-
-        <!-- Vital Signs -->
-        <section class="mb-4">
-            <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <i class="fas fa-heartbeat text-red-500"></i> Signos Vitales
-            </h3>
-            <div class="grid grid-cols-2 gap-3">
-                <!-- Heart Rate -->
-                <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-4 text-white card-shadow">
-                    <div class="flex items-center justify-between mb-2">
-                        <i class="fas fa-heart text-2xl"></i>
-                        <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Ahora</span>
-                    </div>
-                    <p class="text-3xl font-bold">72</p>
-                    <p class="text-red-200 text-sm">Latidos/min</p>
-                    <div class="mt-2 flex items-center text-xs">
-                        <i class="fas fa-check-circle mr-1"></i> Normal
-                    </div>
-                </div>
-
-                <!-- Blood Pressure -->
-                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 text-white card-shadow">
-                    <div class="flex items-center justify-between mb-2">
-                        <i class="fas fa-tint text-2xl"></i>
-                        <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Ahora</span>
-                    </div>
-                    <p class="text-3xl font-bold">120/80</p>
-                    <p class="text-blue-200 text-sm">mmHg</p>
-                    <div class="mt-2 flex items-center text-xs">
-                        <i class="fas fa-check-circle mr-1"></i> Óptimo
-                    </div>
-                </div>
-
-                <!-- Oxygen Level -->
-                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-4 text-white card-shadow">
-                    <div class="flex items-center justify-between mb-2">
-                        <i class="fas fa-lungs text-2xl"></i>
-                        <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Ahora</span>
-                    </div>
-                    <p class="text-3xl font-bold">98%</p>
-                    <p class="text-green-200 text-sm">Saturación O₂</p>
-                    <div class="mt-2 flex items-center text-xs">
-                        <i class="fas fa-check-circle mr-1"></i> Excelente
-                    </div>
-                </div>
-
-                <!-- Temperature -->
-                <div class="bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl p-4 text-white card-shadow">
-                    <div class="flex items-center justify-between mb-2">
-                        <i class="fas fa-thermometer-half text-2xl"></i>
-                        <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Ahora</span>
-                    </div>
-                    <p class="text-3xl font-bold">36.5°</p>
-                    <p class="text-amber-200 text-sm">Temperatura</p>
-                    <div class="mt-2 flex items-center text-xs">
-                        <i class="fas fa-check-circle mr-1"></i> Normal
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Emergency Button -->
-        <section class="mb-4">
-            <button onclick="triggerEmergency()" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-5 rounded-2xl card-shadow flex items-center justify-center gap-3 text-xl font-bold hover:from-red-600 hover:to-red-700 transition">
-                <i class="fas fa-exclamation-triangle text-2xl"></i>
-                ALERTA DE EMERGENCIA
-            </button>
-        </section>
-
-        <!-- Quick Actions -->
-        <section class="mb-4">
-            <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <i class="fas fa-bolt text-amber-500"></i> Acciones Rápidas
-            </h3>
-            <div class="grid grid-cols-4 gap-2">
-                <button onclick="showSection('medicines')" class="bg-white rounded-xl p-3 card-shadow flex flex-col items-center hover:bg-blue-50 transition">
-                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-2">
-                        <i class="fas fa-pills text-purple-600 text-xl"></i>
-                    </div>
-                    <span class="text-xs text-gray-600 font-medium">Medicinas</span>
-                </button>
-                <button onclick="showSection('appointments')" class="bg-white rounded-xl p-3 card-shadow flex flex-col items-center hover:bg-blue-50 transition">
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-                        <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
-                    </div>
-                    <span class="text-xs text-gray-600 font-medium">Citas</span>
-                </button>
-                <button onclick="showSection('location')" class="bg-white rounded-xl p-3 card-shadow flex flex-col items-center hover:bg-blue-50 transition">
-                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
-                        <i class="fas fa-map-marker-alt text-green-600 text-xl"></i>
-                    </div>
-                    <span class="text-xs text-gray-600 font-medium">Ubicación</span>
-                </button>
-                <button onclick="showSection('contacts')" class="bg-white rounded-xl p-3 card-shadow flex flex-col items-center hover:bg-blue-50 transition">
-                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2">
-                        <i class="fas fa-user-friends text-red-600 text-xl"></i>
-                    </div>
-                    <span class="text-xs text-gray-600 font-medium">Contactos</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- Medication Reminders -->
-        <section id="medicines-section" class="mb-4">
-            <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <i class="fas fa-clock text-purple-500"></i> Recordatorio de Medicamentos
-            </h3>
-            <div class="space-y-3">
-                <div class="bg-white rounded-xl p-4 card-shadow flex items-center gap-4 border-l-4 border-green-500">
-                    <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-check text-green-600 text-xl"></i>
-                    </div>
+        <!-- VISTA DE INICIO (HOME) -->
+        <div id="view-home" class="tab-content space-y-4">
+            <!-- Tarjeta de Información -->
+            <section class="bg-white rounded-2xl p-4 card-shadow mb-4 slide-up">
+                <div class="flex items-center gap-4">
+                    <img src="https://ui-avatars.com/api/?name={{ paciente.nombre|default:user.username }}&background=10b981&color=fff&size=70" class="w-16 h-16 rounded-full" alt="Paciente">
                     <div class="flex-1">
-                        <h4 class="font-semibold text-gray-800">Metformina 500mg</h4>
-                        <p class="text-gray-500 text-sm">8:00 AM - 1 tableta</p>
+                    <h2 class="text-xl font-bold text-gray-800"> 
+                        {{ paciente.nombre|default:user.username }}
+                        </h2>
+                        <p class="text-gray-500">   {{ edad }} años • Tipo: {{ tipo_sangre }} </p>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="w-3 h-3 bg-green-500 rounded-full pulse-animation"></span>
+                            <span class="text-green-600 text-sm font-medium">Estado: Estable</span>
+                        </div>
                     </div>
-                    <span class="text-green-600 text-sm font-medium">Tomado</span>
-                </div>
-
-                <div class="bg-white rounded-xl p-4 card-shadow flex items-center gap-4 border-l-4 border-amber-500 pulse-animation">
-                    <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-bell text-amber-600 text-xl"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-gray-800">Lisinopril 10mg</h4>
-                        <p class="text-gray-500 text-sm">2:00 PM - 1 tableta</p>
-                    </div>
-                    <button onclick="markMedicineTaken(this)" class="bg-amber-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-amber-600 transition">
-                        Tomar
+                    <button class="w-14 h-14 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-red-600 transition pulse-animation">
+                        <i class="fas fa-phone text-xl"></i>
                     </button>
                 </div>
+            </section>
 
-                <div class="bg-white rounded-xl p-4 card-shadow flex items-center gap-4 border-l-4 border-gray-300">
-                    <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-pills text-gray-400 text-xl"></i>
+            <!-- Vital Signs -->
+            <!-- Signos Vitales -->
+            <section class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <i class="fas fa-heartbeat text-red-500"></i> Signos Vitales
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Heart Rate -->
+                    <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-4 text-white card-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-heart text-2xl"></i>
+                            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Ahora</span>
+                        </div>
+                        <p id="stat-heart" class="text-3xl font-bold">72</p>
+                        <p class="text-red-200 text-sm">Latidos/min</p>
+                        <div class="mt-2 flex items-center text-xs">
+                            <i class="fas fa-check-circle mr-1"></i> Normal
+                        </div>
                     </div>
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-gray-800">Aspirina 100mg</h4>
-                        <p class="text-gray-500 text-sm">8:00 PM - 1 tableta</p>
+                    <!-- Blood Pressure -->
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 text-white card-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-tint text-2xl"></i>
+                            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Ahora</span>
+                        </div>
+                        <p id="stat-bp" class="text-3xl font-bold">120/80</p>
+                        <p class="text-blue-100 text-sm">mmHg</p>
+                        <div class="mt-2 flex items-center text-xs">
+                            <i class="fas fa-check-circle mr-1"></i> Óptimo
+                        </div>
                     </div>
-                    <span class="text-gray-400 text-sm font-medium">Pendiente</span>
+                    <!-- Oxygen Level -->
+                    <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-4 text-white card-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-lungs text-2xl"></i>
+                            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Ahora</span>
+                        </div>
+                        <p id="stat-ox" class="text-3xl font-bold">98%</p>
+                        <p class="text-green-100 text-sm">Saturación O₂</p>
+                        <div class="mt-2 flex items-center text-xs">
+                            <i class="fas fa-check-circle mr-1"></i> Excelente
+                        </div>
+                    </div>
+                    <!-- Temperature -->
+                    <div class="bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl p-4 text-white card-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-thermometer-half text-2xl"></i>
+                            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">Ahora</span>
+                        </div>
+                        <p id="stat-temp" class="text-3xl font-bold">36.5°</p>
+                        <p class="text-amber-100 text-sm">Temperatura</p>
+                        <div class="mt-2 flex items-center text-xs">
+                            <i class="fas fa-check-circle mr-1"></i> Normal
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Activity Tracking -->
-        <section class="mb-4">
-            <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <i class="fas fa-walking text-blue-500"></i> Actividad del Día
-            </h3>
+            <!-- Botón de Emergencia -->
+            <section class="mb-4">
+                <button onclick="triggerEmergency()" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-5 rounded-2xl card-shadow flex items-center justify-center gap-3 text-xl font-bold hover:from-red-600 hover:to-red-700 transition">
+                    <i class="fas fa-exclamation-triangle text-2xl"></i>
+                    ALERTA DE EMERGENCIA
+                </button>
+            </section>
+
+            <!-- Acciones Rápidas -->
+            <section class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <i class="fas fa-bolt text-amber-500"></i> Acciones Rápidas
+                </h3>
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="showSection('medicines')" class="bg-white rounded-xl p-3 card-shadow flex flex-col items-center hover:bg-blue-50 transition">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-pills text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-600 font-medium">Medicinas</span>
+                    </button>
+                    <button onclick="showSection('appointments')" class="bg-white rounded-xl p-3 card-shadow flex flex-col items-center hover:bg-blue-50 transition">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-600 font-medium">Citas</span>
+                    </button>
+                    <button onclick="showSection('location')" class="bg-white rounded-xl p-3 card-shadow flex flex-col items-center hover:bg-blue-50 transition">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-map-marker-alt text-green-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-600 font-medium">Ubicación</span>
+                    </button>
+                    <button onclick="showSection('contacts')" class="bg-white rounded-xl p-3 card-shadow flex flex-col items-center hover:bg-blue-50 transition">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2">
+                            <i class="fas fa-user-friends text-red-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs text-gray-600 font-medium">Contactos</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- VISTA DE SALUD (HEALTH) -->
+        <div id="view-health" class="tab-content hidden slide-up space-y-4">
+            <h3 class="text-2xl font-bold text-gray-800">Mi Perfil Clínico</h3>
+            
+            <!-- Información Clínica -->
+            <section class="bg-white rounded-2xl p-5 card-shadow">
+                <div class="flex items-center gap-2 mb-4 border-b pb-2">
+                    <i class="fas fa-file-medical text-blue-600 text-xl"></i>
+                    <h4 class="font-bold text-gray-700">Resumen Médico</h4>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm">Enfermedades:</span>
+                        <span class="text-gray-800 font-semibold text-sm text-right">{{ paciente.enfermedades|default:"Ninguna registrada" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm">Tipo de Sangre:</span>
+                        <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">{{ tipo_sangre }}</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-gray-500 text-sm mb-1">Medicamentos:</span>
+                        <p class="text-gray-700 text-sm italic">{{ paciente.medicamentos|default:"Sin medicamentos registrados" }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Métricas Corporales -->
+            <section class="grid grid-cols-2 gap-4">
+                <div class="bg-white rounded-2xl p-4 card-shadow text-center">
+                    <i class="fas fa-weight text-blue-500 mb-2"></i>
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-wider">Peso</p>
+                    <p class="text-2xl font-bold text-gray-800">75 <span class="text-sm font-normal text-gray-400">kg</span></p>
+                </div>
+                <div class="bg-white rounded-2xl p-4 card-shadow text-center">
+                    <i class="fas fa-ruler-vertical text-green-500 mb-2"></i>
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-wider">Altura</p>
+                    <p class="text-2xl font-bold text-gray-800">1.72 <span class="text-sm font-normal text-gray-400">m</span></p>
+                </div>
+            </section>
+            
+            <!-- Gráfica de Tendencia -->
+            <section class="bg-white rounded-2xl p-5 card-shadow">
+                <h4 class="font-bold text-gray-700 text-sm mb-4">Frecuencia Cardíaca (Últimos 7 días)</h4>
+                <div class="flex items-end justify-between h-32 px-2">
+                    <div class="w-4 bg-blue-200 rounded-t" style="height: 60%"></div>
+                    <div class="w-4 bg-blue-300 rounded-t" style="height: 75%"></div>
+                    <div class="w-4 bg-blue-400 rounded-t" style="height: 55%"></div>
+                    <div class="w-4 bg-blue-500 rounded-t" style="height: 90%"></div>
+                    <div class="w-4 bg-blue-400 rounded-t" style="height: 70%"></div>
+                    <div class="w-4 bg-blue-300 rounded-t" style="height: 65%"></div>
+                    <div class="w-4 bg-blue-600 rounded-t pulse-animation" style="height: 80%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-gray-400 mt-2 border-t pt-1">
+                    <span>Lun</span><span>Mar</span><span>Mie</span><span>Jue</span><span>Vie</span><span>Sab</span><span>Hoy</span>
+                </div>
+            </section>
+        </div>
+
+        <!-- VISTA DE HISTORIAL -->
+        <div id="view-history" class="tab-content hidden slide-up">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Historial de Alertas</h3>
             <div class="bg-white rounded-2xl p-4 card-shadow">
-                <div class="flex items-center justify-between mb-4">
+                <p class="text-gray-500 text-center py-8">No hay alertas registradas recientemente.</p>
+            </div>
+        </div>
+
+        <!-- Secciones secundarias de Home (se ocultan si no estás en Home) -->
+        <div id="home-details" class="space-y-4">
+            <section id="medicines-section" class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <i class="fas fa-clock text-purple-500"></i> Medicamentos
+                </h3>
+                <div class="bg-white rounded-xl p-4 card-shadow border-l-4 border-green-500">
+                    <p class="font-semibold">Metformina 500mg</p>
+                    <p class="text-xs text-gray-500">8:00 AM - Tomado</p>
+                </div>
+            </section>
+
+            <section id="activity-section" class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <i class="fas fa-walking text-blue-500"></i> Actividad
+                </h3>
+                <div class="bg-white rounded-2xl p-4 card-shadow">
+                    <p class="text-3xl font-bold">3,248 pasos</p>
+                    <div class="w-full bg-gray-200 rounded-full h-3 mt-2">
+                        <div class="bg-blue-500 h-3 rounded-full" style="width: 65%"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="contacts-section" class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <i class="fas fa-address-book text-red-500"></i> Contactos
+                </h3>
+                <div class="bg-white rounded-xl p-4 card-shadow flex items-center justify-between">
                     <div>
-                        <p class="text-gray-500 text-sm">Pasos hoy</p>
-                        <p class="text-3xl font-bold text-gray-800">3,248</p>
+                        <p class="font-semibold text-gray-800">Ana García</p>
+                        <p class="text-xs text-gray-500">Hija</p>
                     </div>
-                    <div class="w-20 h-20 rounded-full border-8 border-blue-500 flex items-center justify-center">
-                        <span class="text-blue-600 font-bold">65%</span>
-                    </div>
+                    <button class="w-10 h-10 bg-green-500 rounded-full text-white"><i class="fas fa-phone"></i></button>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full" style="width: 65%"></div>
-                </div>
-                <p class="text-gray-500 text-sm mt-2">Meta: 5,000 pasos</p>
-                
-                <div class="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100">
-                    <div class="text-center">
-                        <i class="fas fa-fire text-orange-500 text-xl mb-1"></i>
-                        <p class="font-bold text-gray-800">186</p>
-                        <p class="text-xs text-gray-500">Calorías</p>
-                    </div>
-                    <div class="text-center">
-                        <i class="fas fa-road text-blue-500 text-xl mb-1"></i>
-                        <p class="font-bold text-gray-800">1.8 km</p>
-                        <p class="text-xs text-gray-500">Distancia</p>
-                    </div>
-                    <div class="text-center">
-                        <i class="fas fa-clock text-purple-500 text-xl mb-1"></i>
-                        <p class="font-bold text-gray-800">45 min</p>
-                        <p class="text-xs text-gray-500">Activo</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Emergency Contacts -->
-        <section id="contacts-section" class="mb-4">
-            <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <i class="fas fa-address-book text-red-500"></i> Contactos de Emergencia
-            </h3>
-            <div class="space-y-3">
-                <div class="bg-white rounded-xl p-4 card-shadow flex items-center gap-4">
-                    <img src="https://ui-avatars.com/api/?name=Ana+Garcia&background=ec4899&color=fff&size=50" class="w-12 h-12 rounded-full" alt="">
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-gray-800">Ana García</h4>
-                        <p class="text-gray-500 text-sm">Hija • +52 555 123 4567</p>
-                    </div>
-                    <button class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">
-                        <i class="fas fa-phone"></i>
-                    </button>
-                </div>
-                <div class="bg-white rounded-xl p-4 card-shadow flex items-center gap-4">
-                    <img src="https://ui-avatars.com/api/?name=Dr+Martinez&background=3b82f6&color=fff&size=50" class="w-12 h-12 rounded-full" alt="">
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-gray-800">Dr. Martínez</h4>
-                        <p class="text-gray-500 text-sm">Médico • +52 555 987 6543</p>
-                    </div>
-                    <button class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">
-                        <i class="fas fa-phone"></i>
-                    </button>
-                </div>
-            </div>
-        </section>
-
+            </section>
+        </div>
     </main>
 
     <!-- Bottom Navigation -->
@@ -315,7 +309,7 @@
                 <i class="fas fa-history text-xl"></i>
                 <span class="text-xs mt-1">Historial</span>
             </button>
-            <button onclick="window.location.href='/formulario/'"  class="flex flex-col items-center py-2 px-4 text-gray-400" id="tab-settings">
+            <button onclick="window.location.href='{% url 'wizard' %}'"  class="flex flex-col items-center py-2 px-4 text-gray-400" id="tab-settings">
                 <i class="fas fa-cog text-xl"></i>
                 <span class="text-xs mt-1">Ajustes</span>
             </button>
@@ -414,24 +408,52 @@
         }
 
         function switchTab(tab) {
+            // Actualizar estilo de botones
             document.querySelectorAll('nav button').forEach(btn => {
                 btn.classList.remove('tab-active');
                 btn.classList.add('text-gray-400');
             });
             document.getElementById('tab-' + tab).classList.add('tab-active');
             document.getElementById('tab-' + tab).classList.remove('text-gray-400');
+
+            // Ocultar todos los contenidos y mostrar el seleccionado
+            // Ocultar todas las secciones de pestaña
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Mostrar la seleccionada
+            // Mostrar la vista seleccionada
+            document.getElementById('view-' + tab).classList.remove('hidden');
+            document.getElementById('home-details').classList.add('hidden');
+            
+            // Mostrar detalles de Home solo si estamos en Home
+            if(tab === 'home') {
+                document.getElementById('home-details').classList.remove('hidden');
+                document.getElementById('contacts-section').classList.remove('hidden');
+            }
         }
 
         function showSection(section) {
+            switchTab('home'); // Asegurarnos de estar en home para ver estas secciones
             document.getElementById(section + '-section').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Simular actualización de signos vitales
+        // Simular actualización de signos vitales real en la UI
         setInterval(() => {
             const heartRate = 68 + Math.floor(Math.random() * 10);
             const oxygen = 96 + Math.floor(Math.random() * 4);
+            const temp = (36.2 + (Math.random() * 0.8)).toFixed(1);
+            const systolic = 115 + Math.floor(Math.random() * 10);
+            const diastolic = 75 + Math.floor(Math.random() * 10);
+
+            document.getElementById('stat-heart').innerText = heartRate;
+            document.getElementById('stat-ox').innerText = oxygen + '%';
+            document.getElementById('stat-temp').innerText = temp + '°';
+            document.getElementById('stat-bp').innerText = `${systolic}/${diastolic}`;
+            
             console.log(`Actualizando: FC ${heartRate}, O2 ${oxygen}%`);
-        }, 30000);
+        }, 5000); // Actualización cada 5 segundos para el prototipo
     </script>
 </body>
 </html>
