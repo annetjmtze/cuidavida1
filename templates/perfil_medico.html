@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil Médico - CuidaVida</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: #f3f4f6; }
+        .card-shadow { box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen max-w-md mx-auto">
+    <header class="bg-gradient-to-r from-indigo-700 to-blue-800 text-white p-4 sticky top-0 z-50 shadow-lg">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="window.history.back()" class="text-white text-xl mr-2"><i class="fas fa-arrow-left"></i></button>
+                <h1 class="text-xl font-bold tracking-tight">Mi Perfil Médico</h1>
+            </div>
+            <img src="https://ui-avatars.com/api/?name={{ medico.nombre|default:user.username }}&background=ffffff&color=1e3a8a&bold=true&size=40" class="w-10 h-10 rounded-full border-2 border-white shadow-md" alt="Dr. Perfil">
+        </div>
+    </header>
+
+    <main class="p-4 pb-24">
+        <section class="bg-white rounded-2xl p-5 card-shadow mb-5">
+            <div class="flex items-center gap-4 mb-4">
+                <img src="https://ui-avatars.com/api/?name={{ medico.nombre|default:user.username }}&background=indigo&color=fff&size=70" class="w-16 h-16 rounded-full" alt="Dr. Perfil">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">Dr. {{ medico.nombre }}</h2>
+                    <p class="text-indigo-600 text-sm">{{ medico.especialidad|default:"Especialista" }}</p>
+                </div>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="space-y-4">
+                    <div>
+                        <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
+                        <input type="text" name="nombre" id="nombre" value="{{ medico.nombre }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="especialidad" class="block text-sm font-medium text-gray-700">Especialidad</label>
+                        <input type="text" name="especialidad" id="especialidad" value="{{ medico.especialidad }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="cedula" class="block text-sm font-medium text-gray-700">Cédula Profesional</label>
+                        <input type="text" name="cedula" id="cedula" value="{{ medico.cedula }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" maxlength="8">
+                        <p id="cedula_error" class="text-red-500 text-xs mt-1 hidden">La cédula debe tener entre 7 y 8 dígitos numéricos.</p>
+                    </div>
+                    <div>
+                        <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                        <input type="tel" name="telefono" id="telefono" value="{{ medico.telefono }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" maxlength="10">
+                        <p id="telefono_error" class="text-red-500 text-xs mt-1 hidden">Ingrese un teléfono válido de 10 dígitos.</p>
+                    </div>
+                    <div>
+                        <label for="direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
+                        <textarea name="direccion" id="direccion" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">{{ medico.direccion }}</textarea>
+                    </div>
+                    <div>
+                        <label for="cp_input" class="block text-sm font-medium text-gray-700">Código Postal</label>
+                        <input type="text" name="cp" id="cp_input" value="{{ medico.cp }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" maxlength="5">
+                        <p id="cp_error" class="text-red-500 text-xs mt-1 hidden">Código postal no válido.</p>
+                    </div>
+                    <div>
+                        <label for="estado_input" class="block text-sm font-medium text-gray-700">Estado</label>
+                        <input type="text" name="estado" id="estado_input" value="{{ medico.estado }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50 sm:text-sm" readonly>
+                    </div>
+                    <div>
+                        <label for="municipio_input" class="block text-sm font-medium text-gray-700">Municipio</label>
+                        <input type="text" name="municipio" id="municipio_input" value="{{ medico.municipio }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50 sm:text-sm" readonly>
+                    </div>
+                    <div>
+                        <label for="colonia_select" class="block text-sm font-medium text-gray-700">Colonia</label>
+                        <select name="colonia" id="colonia_select" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="">Selecciona Colonia</option>
+                            {% if medico.colonia %}<option value="{{ medico.colonia }}" selected>{{ medico.colonia }}</option>{% endif %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="mt-6 w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Guardar Cambios
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        // Validación para Cédula Profesional (7 u 8 dígitos numéricos)
+        const cedulaInput = document.getElementById('cedula');
+        const cedulaError = document.getElementById('cedula_error');
+
+        cedulaInput.addEventListener('input', (e) => {
+            // Limpiar cualquier caracter no numérico
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            const val = e.target.value;
+            const isValid = val.length >= 7 && val.length <= 8;
+
+            if (val === '') {
+                cedulaError.classList.add('hidden');
+                cedulaInput.classList.remove('border-red-500');
+            } else if (isValid) {
+                cedulaError.classList.add('hidden');
+                cedulaInput.classList.remove('border-red-500');
+            } else {
+                cedulaError.classList.remove('hidden');
+                cedulaInput.classList.add('border-red-500');
+            }
+        });
+
+        // Validación para Teléfono (10 dígitos numéricos)
+        const telefonoInput = document.getElementById('telefono');
+        const telefonoError = document.getElementById('telefono_error');
+
+        telefonoInput.addEventListener('input', (e) => {
+            // Limpiar cualquier caracter no numérico
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            const val = e.target.value;
+            const isValid = val.length === 10;
+
+            if (val === '') {
+                telefonoError.classList.add('hidden');
+                telefonoInput.classList.remove('border-red-500');
+            } else if (isValid) {
+                telefonoError.classList.add('hidden');
+                telefonoInput.classList.remove('border-red-500');
+            } else {
+                telefonoError.classList.remove('hidden');
+                telefonoInput.classList.add('border-red-500');
+            }
+        });
+
+        // LÓGICA DE BÚSQUEDA DE CP (copiado y adaptado de wizard.html)
+        const cpInput = document.getElementById("cp_input");
+        const estadoInput = document.getElementById("estado_input");
+        const municipioInput = document.getElementById("municipio_input");
+        const coloniaSelect = document.getElementById("colonia_select");
+        const cpError = document.getElementById("cp_error");
+
+        cpInput.addEventListener("input", (e) => {
+            const cp = e.target.value.replace(/[^0-9]/g, ''); // Asegura que solo sean números
+            e.target.value = cp; // Actualiza el valor del input con el CP limpio
+
+            if (cp.length === 5) {
+                fetch(`/buscar-cp/?cp=${cp}`)
+                    .then(response => response.json())
+                    .then(res => {
+                        if (res.success) {
+                            cpError.classList.add("hidden");
+                            cpInput.classList.remove('border-red-500'); // Quita el borde rojo si hay éxito
+                            estadoInput.value = res.data.estado;
+                            municipioInput.value = res.data.municipio;
+                            
+                            // Limpiar y llenar colonias
+                            coloniaSelect.innerHTML = '<option value="">Selecciona Colonia</option>';
+                            res.data.colonias.forEach(col => {
+                                const opt = document.createElement("option");
+                                opt.value = col;
+                                opt.textContent = col;
+                                if (col === "{{ medico.colonia }}") { // Pre-selecciona si coincide con la colonia actual del médico
+                                    opt.selected = true;
+                                }
+                                coloniaSelect.appendChild(opt);
+                            });
+                            // Si solo hay una opción (además de la por defecto), la selecciona
+                            if (res.data.colonias.length === 1 && !coloniaSelect.value) {
+                                coloniaSelect.value = res.data.colonias[0];
+                            }
+
+                        } else {
+                            cpError.classList.remove("hidden");
+                            cpInput.classList.add('border-red-500'); // Añade borde rojo si hay error
+                            estadoInput.value = '';
+                            municipioInput.value = '';
+                            coloniaSelect.innerHTML = '<option value="">Selecciona Colonia</option>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching CP data:", error);
+                        cpError.classList.remove("hidden");
+                        cpInput.classList.add('border-red-500');
+                        estadoInput.value = '';
+                        municipioInput.value = '';
+                        coloniaSelect.innerHTML = '<option value="">Selecciona Colonia</option>';
+                    });
+            } else {
+                cpError.classList.add("hidden"); // Oculta el error si el CP no tiene 5 dígitos o está vacío
+                cpInput.classList.remove('border-red-500');
+                estadoInput.value = '';
+                municipioInput.value = '';
+                coloniaSelect.innerHTML = '<option value="">Selecciona Colonia</option>';
+            }
+        });
+
+        // Carga inicial: si ya hay un CP guardado, dispara el evento para rellenar los campos
+        document.addEventListener('DOMContentLoaded', () => {
+            if (cpInput.value && cpInput.value.length === 5) {
+                const event = new Event('input', { bubbles: true });
+                cpInput.dispatchEvent(event);
+            }
+        });
+    </script>
+</body>
+</html>

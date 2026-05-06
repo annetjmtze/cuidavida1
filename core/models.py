@@ -19,7 +19,7 @@ class Perfil(models.Model):
 # 🔹 Datos del paciente
 class Paciente(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-
+    medico_asignado = models.ForeignKey('Medico', on_delete=models.SET_NULL, null=True, blank=True, related_name='pacientes')
     nombre = models.CharField(max_length=100)
     edad = models.IntegerField()
     telefono = models.CharField(max_length=15)
@@ -64,3 +64,14 @@ class CodigoPostal(models.Model):
     municipio = models.CharField(max_length=100)
     estado = models.CharField(max_length=100)
     ciudad = models.CharField(max_length=100, blank=True, null=True)
+
+# 🔹 Modelo para Recetas
+class Receta(models.Model):
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE, related_name='recetas')
+    medico = models.ForeignKey(Medico, on_delete=models.CASCADE)
+    fecha = models.DateTimeField(auto_now_add=True)
+    medicamentos = models.TextField()
+    indicaciones = models.TextField()
+
+    def __str__(self):
+        return f"Receta para {self.paciente.nombre} - {self.fecha.strftime('%d/%m/%Y')}"

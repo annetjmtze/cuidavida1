@@ -91,14 +91,14 @@
                     <i class="fas fa-bell text-lg"></i>
                     <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center border-2 border-white">4</span>
                 </button>
-                <img src="https://ui-avatars.com/api/?name=Dr.+Carlos+M&background=ffffff&color=1e3a8a&bold=true&size=40" class="w-10 h-10 rounded-full border-2 border-white shadow-md" alt="Dr. Perfil">
+                <img src="https://ui-avatars.com/api/?name={{ medico.nombre|default:user.username }}&background=ffffff&color=1e3a8a&bold=true&size=40" class="w-10 h-10 rounded-full border-2 border-white shadow-md" alt="Dr. Perfil">
             </div>
         </div>
         <!-- Resumen rápido del médico -->
         <div class="mt-3 flex justify-between items-center text-xs bg-indigo-800/40 rounded-xl p-2 px-3 backdrop-blur-sm">
             <div class="flex items-center gap-2">
                 <i class="fas fa-stethoscope"></i>
-                <span>Cardiología Clínica</span>
+                <span>{{ medico.especialidad|default:"Medicina General" }}</span>
             </div>
             <div class="flex items-center gap-2">
                 <i class="fas fa-calendar-alt"></i>
@@ -117,8 +117,8 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-500 text-sm font-medium">Bienvenido de vuelta,</p>
-                    <h2 class="text-2xl font-bold text-gray-800">Dr. Carlos Martínez</h2>
-                    <p class="text-indigo-600 text-xs mt-1 flex items-center gap-1"><i class="fas fa-id-card"></i> Especialista en Geriatría</p>
+                    <h2 class="text-2xl font-bold text-gray-800">Dr. {{ medico.nombre }}</h2>
+                    <p class="text-indigo-600 text-xs mt-1 flex items-center gap-1"><i class="fas fa-id-card"></i> {{ medico.especialidad|default:"Especialista" }}</p>
                 </div>
                 <div class="bg-indigo-100 w-14 h-14 rounded-full flex items-center justify-center">
                     <i class="fas fa-chart-line text-indigo-600 text-2xl"></i>
@@ -197,82 +197,25 @@
                 <button class="text-xs text-indigo-600 font-medium flex items-center gap-1"><i class="fas fa-chevron-right"></i> Ver todos</button>
             </div>
             <div class="space-y-3 max-h-[340px] overflow-y-auto pr-1">
-                <!-- Paciente 1 -->
-                <div class="bg-white rounded-xl p-3 card-shadow flex items-center gap-3 patient-card border-l-4 border-green-400">
-                    <img src="https://ui-avatars.com/api/?name=Abuelo+Carlos&background=10b981&color=fff&size=48" class="w-12 h-12 rounded-full" alt="paciente">
+                {% for p in pacientes %}
+                <div class="bg-white rounded-xl p-3 card-shadow flex items-center gap-3 patient-card border-l-4 border-indigo-400">
+                    <img src="https://ui-avatars.com/api/?name={{ p.nombre }}&background=indigo&color=fff&size=48" class="w-12 h-12 rounded-full" alt="paciente">
                     <div class="flex-1">
                         <div class="flex justify-between items-start">
                             <div>
-                                <h4 class="font-bold text-gray-800">Carlos Ramírez</h4>
-                                <p class="text-xs text-gray-500">72 años · A+ · Hipertenso</p>
+                                <h4 class="font-bold text-gray-800">{{ p.nombre }}</h4>
+                                <p class="text-xs text-gray-500">{{ p.edad }} años · {{ p.tipo_sangre }}</p>
                             </div>
-                            <span class="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-semibold">Estable</span>
                         </div>
                         <div class="flex gap-3 mt-2 text-xs">
-                            <span><i class="fas fa-heart text-red-400 text-[10px]"></i> 118/76</span>
-                            <span><i class="fas fa-waveform text-blue-400"></i> 72 lpm</span>
-                            <span><i class="fas fa-calendar-check text-indigo-400"></i> Próxima cita: 10/04</span>
+                            <span><i class="fas fa-phone text-gray-400"></i> {{ p.telefono }}</span>
                         </div>
                     </div>
-                    <button onclick="openPatientDetail('Carlos Ramírez')" class="bg-indigo-50 text-indigo-700 p-2 rounded-full w-8 h-8 flex items-center justify-center hover:bg-indigo-100"><i class="fas fa-chevron-right text-sm"></i></button>
+                    <button onclick="openPatientDetail('{{ p.nombre }}', '{{ p.id }}')" class="bg-indigo-50 text-indigo-700 p-2 rounded-full w-8 h-8 flex items-center justify-center hover:bg-indigo-100"><i class="fas fa-chevron-right text-sm"></i></button>
                 </div>
-                <!-- Paciente 2 con alerta moderada -->
-                <div class="bg-white rounded-xl p-3 card-shadow flex items-center gap-3 patient-card border-l-4 border-amber-400">
-                    <img src="https://ui-avatars.com/api/?name=Elena+Gomez&background=f59e0b&color=fff&size=48" class="w-12 h-12 rounded-full" alt="paciente">
-                    <div class="flex-1">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-gray-800">Elena Gómez</h4>
-                                <p class="text-xs text-gray-500">68 años · O- · Diabetes tipo 2</p>
-                            </div>
-                            <span class="bg-amber-100 text-amber-700 text-[10px] px-2 py-0.5 rounded-full font-semibold">Alerta leve</span>
-                        </div>
-                        <div class="flex gap-3 mt-2 text-xs">
-                            <span><i class="fas fa-tint text-red-400"></i> 145/90</span>
-                            <span><i class="fas fa-chart-line text-orange-400"></i> Glucosa: 156</span>
-                            <span><i class="fas fa-clock"></i> Última lectura: 1h</span>
-                        </div>
-                    </div>
-                    <button onclick="openPatientDetail('Elena Gómez')" class="bg-indigo-50 text-indigo-700 p-2 rounded-full w-8 h-8 flex items-center justify-center"><i class="fas fa-chevron-right text-sm"></i></button>
-                </div>
-                <!-- Paciente 3 -->
-                <div class="bg-white rounded-xl p-3 card-shadow flex items-center gap-3 patient-card border-l-4 border-blue-300">
-                    <img src="https://ui-avatars.com/api/?name=Jorge+Luna&background=3b82f6&color=fff&size=48" class="w-12 h-12 rounded-full" alt="paciente">
-                    <div class="flex-1">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-gray-800">Jorge Luna</h4>
-                                <p class="text-xs text-gray-500">80 años · B+ · EPOC</p>
-                            </div>
-                            <span class="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded-full">Monitoreo</span>
-                        </div>
-                        <div class="flex gap-3 mt-2 text-xs">
-                            <span><i class="fas fa-lungs text-teal-500"></i> SpO₂: 94%</span>
-                            <span><i class="fas fa-thermometer-half"></i> 36.8°</span>
-                            <span><i class="fas fa-walking"></i> Pasos: 2,130</span>
-                        </div>
-                    </div>
-                    <button onclick="openPatientDetail('Jorge Luna')" class="bg-indigo-50 text-indigo-700 p-2 rounded-full w-8 h-8 flex items-center justify-center"><i class="fas fa-chevron-right text-sm"></i></button>
-                </div>
-                <!-- Paciente 4 -->
-                <div class="bg-white rounded-xl p-3 card-shadow flex items-center gap-3 patient-card border-l-4 border-green-300">
-                    <img src="https://ui-avatars.com/api/?name=Sofia+Quintero&background=10b981&color=fff&size=48" class="w-12 h-12 rounded-full" alt="paciente">
-                    <div class="flex-1">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-gray-800">Sofía Quintero</h4>
-                                <p class="text-xs text-gray-500">65 años · AB+ · Artritis</p>
-                            </div>
-                            <span class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full">Estable</span>
-                        </div>
-                        <div class="flex gap-3 mt-2 text-xs">
-                            <span><i class="fas fa-heartbeat"></i> 70 lpm</span>
-                            <span><i class="fas fa-chart-simple"></i> Presión: 118/72</span>
-                            <span><i class="fas fa-calendar-week"></i> Cita: 12/04</span>
-                        </div>
-                    </div>
-                    <button onclick="openPatientDetail('Sofía Quintero')" class="bg-indigo-50 text-indigo-700 p-2 rounded-full w-8 h-8 flex items-center justify-center"><i class="fas fa-chevron-right text-sm"></i></button>
-                </div>
+                {% empty %}
+                <p class="text-center text-gray-500 text-sm py-4">No tienes pacientes asignados.</p>
+                {% endfor %}
             </div>
         </section>
 
@@ -410,7 +353,7 @@
                 <i class="fas fa-bell text-xl"></i>
                 <span class="text-xs mt-1">Alertas</span>
             </button>
-            <button onclick="window.location.href='/configuracion-medico/'" class="flex flex-col items-center py-2 px-4 text-gray-400" id="tab-config">
+            <button onclick="window.location.href='{% url 'perfil_medico' %}'" class="flex flex-col items-center py-2 px-4 text-gray-400" id="tab-config">
                 <i class="fas fa-user-md text-xl"></i>
                 <span class="text-xs mt-1">Mi perfil</span>
             </button>
@@ -448,22 +391,24 @@
                 <h3 class="text-xl font-bold text-gray-800" id="modal-patient-name">Detalle del paciente</h3>
                 <button onclick="closePatientModal()" class="text-gray-400 text-xl">&times;</button>
             </div>
-            <div class="space-y-2 text-sm">
-                <p><i class="fas fa-notes-medical text-indigo-500 w-6"></i> <strong>Últimos signos:</strong> Presión 125/82, FC 76, Sat 97%</p>
-                <p><i class="fas fa-clock w-6 text-gray-500"></i> Próxima cita: 10/04/2025 · 11:30 am</p>
-                <p><i class="fas fa-file-alt w-6"></i> Historial: Hipertensión controlada, medicación actual: Enalapril 10mg</p>
-                <div class="flex gap-2 mt-4">
-                    <button class="bg-indigo-600 text-white flex-1 py-2 rounded-xl text-sm font-semibold">Ver historial completo</button>
-                    <button class="bg-green-600 text-white py-2 px-3 rounded-xl"><i class="fas fa-phone-alt"></i></button>
+            <form id="receta-form" method="POST" action="">
+                {% csrf_token %}
+                <div class="space-y-3">
+                    <textarea name="medicamentos" placeholder="Medicamentos (ej. Paracetamol 500mg)" class="w-full border rounded-xl p-2 text-sm" required></textarea>
+                    <textarea name="indicaciones" placeholder="Indicaciones (ej. Cada 8 horas por 3 días)" class="w-full border rounded-xl p-2 text-sm" required></textarea>
                 </div>
-            </div>
+                <div class="flex gap-2 mt-4">
+                    <button type="submit" class="bg-indigo-600 text-white flex-1 py-2 rounded-xl text-sm font-semibold">Enviar Receta</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
         function toggleNotifications() { document.getElementById('notification-modal').classList.toggle('hidden'); }
-        function openPatientDetail(name) { 
+        function openPatientDetail(name, id) { 
             document.getElementById('modal-patient-name').innerText = name;
+            document.getElementById('receta-form').action = `/enviar-receta/${id}/`;
             document.getElementById('patient-modal').classList.remove('hidden');
         }
         function closePatientModal() { document.getElementById('patient-modal').classList.add('hidden'); }

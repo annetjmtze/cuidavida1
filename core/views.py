@@ -4,9 +4,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db import transaction
-#DEBEMOS CREAR UNA VISTA EN DJANGO QUE RECIBA UN CP, Y LO CONVIERTA A INFORMACIÓ GEOGRÁFUCA EN JSON
+from django.views.decorators.http import require_POST
 # 🔹 IMPORTAR MODELOS
-from .models import Perfil, Paciente, Medico, CodigoPostal
+from .models import Perfil, Paciente, Medico, CodigoPostal, Receta
 
 
 # 🔹 LOGOUT
@@ -141,7 +141,12 @@ def dashboard(request):
         return redirect('login')
 
     if perfil.tipo == 'medico':
-        return render(request, 'prototipo_medico.html')
+        medico = request.user.medico
+        pacientes = medico.pacientes.all()
+        return render(request, 'prototipo_medico.html', {
+            'pacientes': pacientes,
+            'medico': medico
+        })
     else:
         # Obtenemos el objeto paciente para pasar sus datos al HTML
         paciente = getattr(request.user, 'paciente', None)
@@ -149,9 +154,52 @@ def dashboard(request):
             'paciente': paciente,
             'edad': paciente.edad if paciente else "N/A",
             'tipo_sangre': paciente.tipo_sangre if paciente else "N/A",
+            'recetas': paciente.recetas.all().order_by('-fecha') if paciente else [],
         }
         return render(request, 'prototipo.html', context)
+
+@login_required
+@require_POST
+def enviar_receta(request, paciente_id):
+    if request.user.perfil.tipo != 'medico':
+        return JsonResponse({'success': False, 'error': 'No autorizado'})
+    
+    paciente = Paciente.objects.get(id=paciente_id)
+    medicamentos = request.POST.get('medicamentos')
+    indicaciones = request.POST.get('indicaciones')
+    
+    Receta.objects.create(
+        paciente=paciente,
+        medico=request.user.medico,
+        medicamentos=medicamentos,
+        indicaciones=indicaciones
+    )
+    return redirect('dashboard')
 #MUCHAS DUDAS AQUÍ-----------------------------------------------
+
+@login_required
+def perfil_medico_view(request):
+    # Asegurarse de que solo los médicos puedan acceder a esta vista
+    if request.user.perfil.tipo != 'medico':
+        return redirect('dashboard') 
+
+    medico = request.user.medico
+
+    if request.method == 'POST':
+        # Actualizar los campos del médico con los datos del formulario
+        medico.nombre = request.POST.get('nombre', medico.nombre)
+        medico.especialidad = request.POST.get('especialidad', medico.especialidad)
+        medico.telefono = request.POST.get('telefono', medico.telefono)
+        medico.direccion = request.POST.get('direccion', medico.direccion)
+        medico.cedula = request.POST.get('cedula', medico.cedula)
+        medico.save()
+        # Opcional: Actualizar el nombre del usuario de Django si el nombre del médico es el nombre completo
+        request.user.first_name = medico.nombre
+        request.user.save()
+        return redirect('perfil_medico') # Redirigir a la misma página para mostrar los cambios
+
+    return render(request, 'perfil_medico.html', {'medico': medico})
+
 # 🔹 API PARA VALIDAR CÓDIGO POSTAL
 def buscar_cp(request):
     cp = request.GET.get('cp')

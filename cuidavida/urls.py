@@ -30,4 +30,6 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     #AGREGAR EL CAMPO PARA BUSCAR, REDIRECCIONAMIENTO
     path('buscar-cp/', views.buscar_cp, name='buscar_cp'),
+    path('enviar-receta/<int:paciente_id>/', views.enviar_receta, name='enviar_receta'),
+    path('perfil-medico/', views.perfil_medico_view, name='perfil_medico'),
 ]
