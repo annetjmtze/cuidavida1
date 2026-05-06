@@ -52,6 +52,11 @@ class Medico(models.Model):
     especialidad = models.CharField(max_length=100)
     telefono = models.CharField(max_length=15)
     direccion = models.TextField()
+    # Nuevos campos de dirección para el médico
+    cp = models.CharField(max_length=5, blank=True, null=True)
+    estado = models.CharField(max_length=100, blank=True, null=True)
+    municipio = models.CharField(max_length=100, blank=True, null=True)
+    colonia = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.nombre

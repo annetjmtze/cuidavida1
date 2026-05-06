@@ -45,6 +45,11 @@ def wizard(request):
             paciente.direccion = request.POST.get("direccion")
             paciente.hospital = request.POST.get("hospital")
             paciente.num_seguro = request.POST.get("seguro")
+
+            # Vincular con el médico seleccionado si existe
+            medico_id = request.POST.get("medico_asignado")
+            if medico_id:
+                paciente.medico_asignado_id = medico_id
             
             # Guardamos los cambios en la base de datos
             paciente.save()
@@ -54,7 +59,9 @@ def wizard(request):
             
         return redirect("dashboard")
 
-    return render(request, "wizard.html")
+    # Pasamos la lista de todos los médicos registrados para que el paciente elija
+    medicos = Medico.objects.all()
+    return render(request, "wizard.html", {'medicos': medicos})
 
 
 # 🔹 REGISTRO (AQUÍ ESTÁ LO IMPORTANTE 🔥)
@@ -192,6 +199,11 @@ def perfil_medico_view(request):
         medico.telefono = request.POST.get('telefono', medico.telefono)
         medico.direccion = request.POST.get('direccion', medico.direccion)
         medico.cedula = request.POST.get('cedula', medico.cedula)
+        # Guardar los nuevos campos de dirección
+        medico.cp = request.POST.get('cp', medico.cp)
+        medico.estado = request.POST.get('estado', medico.estado)
+        medico.municipio = request.POST.get('municipio', medico.municipio)
+        medico.colonia = request.POST.get('colonia', medico.colonia)
         medico.save()
         # Opcional: Actualizar el nombre del usuario de Django si el nombre del médico es el nombre completo
         request.user.first_name = medico.nombre
