@@ -45,6 +45,10 @@ def wizard(request):
             paciente.direccion = request.POST.get("direccion")
             paciente.hospital = request.POST.get("hospital")
             paciente.num_seguro = request.POST.get("seguro")
+            
+            # Procesar foto si se subió una nueva
+            if request.FILES.get("foto"):
+                paciente.foto = request.FILES.get("foto")
 
             # Vincular con el médico seleccionado si existe
             medico_id = request.POST.get("medico_asignado")
@@ -73,6 +77,7 @@ def registro(request):
         nombre = request.POST['nombre']
         tipo = request.POST['tipo']
         cedula = request.POST.get('cedula', '')
+        foto = request.FILES.get('foto')
 
         try:
             with transaction.atomic():
@@ -89,7 +94,8 @@ def registro(request):
                         nombre=nombre,
                         edad=0,
                         telefono='',
-                        direccion=''
+                        direccion='',
+                        foto=foto
                     )
                 else:
                     Medico.objects.create(
@@ -98,7 +104,8 @@ def registro(request):
                         especialidad='',
                         telefono='',
                         direccion='',
-                        cedula=cedula
+                        cedula=cedula,
+                        foto=foto
                     )
         except Exception as e:
             # Si algo falla (ej. cédula inválida), volvemos a mostrar el registro con el error
@@ -204,6 +211,11 @@ def perfil_medico_view(request):
         medico.estado = request.POST.get('estado', medico.estado)
         medico.municipio = request.POST.get('municipio', medico.municipio)
         medico.colonia = request.POST.get('colonia', medico.colonia)
+
+        # Procesar foto si se subió una nueva
+        if request.FILES.get('foto'):
+            medico.foto = request.FILES.get('foto')
+
         medico.save()
         # Opcional: Actualizar el nombre del usuario de Django si el nombre del médico es el nombre completo
         request.user.first_name = medico.nombre

@@ -192,14 +192,20 @@ const steps = document.querySelectorAll(".step");
 const progress = document.querySelectorAll(".progress");
 
 function updateUI() {
-steps.forEach((step, i) => {
-step.classList.toggle("active", i === currentStep);
-});
+    // Alternar visibilidad de los pasos
+    steps.forEach((step, i) => {
+        step.classList.toggle("active", i === currentStep);
+    });
 
-progress.forEach((bar, i) => {
-bar.classList.toggle("bg-blue-500", i <= currentStep);
-bar.classList.toggle("bg-gray-200", i > currentStep);
-});
+    // Actualizar barras de progreso
+    progress.forEach((bar, i) => {
+        bar.classList.toggle("bg-blue-500", i <= currentStep);
+        bar.classList.toggle("bg-gray-200", i > currentStep);
+    });
+
+    // Controlar visibilidad del botón anterior y texto del siguiente
+    document.getElementById("prev").style.visibility = (currentStep === 0) ? "hidden" : "visible";
+    document.getElementById("next").innerText = (currentStep === steps.length - 1) ? "Finalizar" : "Siguiente";
 }
 
 document.getElementById("next").onclick = () => {
@@ -228,11 +234,15 @@ document.querySelector("form").submit();
 };
 
 document.getElementById("prev").onclick = () => {
-if(currentStep > 0){
-currentStep--;
-updateUI();
-}
+    if(currentStep > 0){
+        currentStep--;
+        updateUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 };
+
+// Inicializar la interfaz al cargar
+updateUI();
 
 // FOTO PREVIEW
 function previewImage(event){

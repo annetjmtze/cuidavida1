@@ -57,8 +57,10 @@
                     <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center">3</span>
                 </button>
                 <div class="group relative">
-                    <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=fff&color=2563eb&size=40" class="w-10 h-10 rounded-full border-2 border-white cursor-pointer" alt="Perfil">
-                    <a href="{% url 'logout' %}" class="absolute right-0 mt-2 bg-white text-red-600 text-xs py-1 px-3 rounded shadow-lg hidden group-hover:block whitespace-nowrap">Cerrar Sesión</a>
+                    <img src="{% if paciente.foto %}{{ paciente.foto.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=fff&color=2563eb&size=40{% endif %}" class="w-10 h-10 rounded-full border-2 border-white cursor-pointer object-cover" alt="Perfil">
+                    <div class="absolute right-0 top-full pt-2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-300 delay-150 group-hover:delay-0">
+                        <a href="{% url 'logout' %}" class="bg-white text-red-600 text-xs py-1 px-3 rounded shadow-lg whitespace-nowrap block hover:bg-gray-50">Cerrar Sesión</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -72,7 +74,7 @@
             <!-- Tarjeta de Información -->
             <section class="bg-white rounded-2xl p-4 card-shadow mb-4 slide-up">
                 <div class="flex items-center gap-4">
-                    <img src="https://ui-avatars.com/api/?name={{ paciente.nombre|default:user.username }}&background=10b981&color=fff&size=70" class="w-16 h-16 rounded-full" alt="Paciente">
+                    <img src="{% if paciente.foto %}{{ paciente.foto.url }}{% else %}https://ui-avatars.com/api/?name={{ paciente.nombre|default:user.username }}&background=10b981&color=fff&size=70{% endif %}" class="w-16 h-16 rounded-full object-cover" alt="Paciente">
                     <div class="flex-1">
                     <h2 class="text-xl font-bold text-gray-800"> 
                         {{ paciente.nombre|default:user.username }}
@@ -258,13 +260,30 @@
         <!-- Secciones secundarias de Home (se ocultan si no estás en Home) -->
         <div id="home-details" class="space-y-4">
             <section id="medicines-section" class="mb-4">
-                <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                    <i class="fas fa-clock text-purple-500"></i> Medicamentos
+                <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center justify-between">
+                    <span class="flex items-center gap-2">
+                        <i class="fas fa-file-prescription text-purple-500"></i> Mis Recetas
+                    </span>
+                    <span class="text-xs text-gray-400 font-normal">Recientes</span>
                 </h3>
-                <div class="bg-white rounded-xl p-4 card-shadow border-l-4 border-green-500">
-                    <p class="font-semibold">Metformina 500mg</p>
-                    <p class="text-xs text-gray-500">8:00 AM - Tomado</p>
+                
+                {% for receta in recetas %}
+                <div class="bg-white rounded-xl p-4 card-shadow border-l-4 border-indigo-500 mb-3 slide-up">
+                    <div class="flex justify-between items-start">
+                        <p class="font-bold text-gray-800 text-sm">{{ receta.medicamentos }}</p>
+                        <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-medium">{{ receta.fecha|date:"d M" }}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1">{{ receta.indicaciones }}</p>
+                    <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
+                        <i class="fas fa-user-md text-gray-300"></i> Dr. {{ receta.medico.nombre }}
+                    </p>
                 </div>
+                {% empty %}
+                <div class="bg-white rounded-xl p-6 card-shadow text-center">
+                    <i class="fas fa-pills text-gray-200 text-3xl mb-2"></i>
+                    <p class="text-gray-500 text-sm">No tienes recetas registradas.</p>
+                </div>
+                {% endfor %}
             </section>
 
             <section id="activity-section" class="mb-4">

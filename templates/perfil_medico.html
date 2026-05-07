@@ -19,22 +19,28 @@
                 <button onclick="window.history.back()" class="text-white text-xl mr-2"><i class="fas fa-arrow-left"></i></button>
                 <h1 class="text-xl font-bold tracking-tight">Mi Perfil Médico</h1>
             </div>
-            <img src="https://ui-avatars.com/api/?name={{ medico.nombre|default:user.username }}&background=ffffff&color=1e3a8a&bold=true&size=40" class="w-10 h-10 rounded-full border-2 border-white shadow-md" alt="Dr. Perfil">
+            <img src="{% if medico.foto %}{{ medico.foto.url }}{% else %}https://ui-avatars.com/api/?name={{ medico.nombre|default:user.username }}&background=ffffff&color=1e3a8a&bold=true&size=40{% endif %}" class="w-10 h-10 rounded-full border-2 border-white shadow-md object-cover" alt="Dr. Perfil">
         </div>
     </header>
 
     <main class="p-4 pb-24">
         <section class="bg-white rounded-2xl p-5 card-shadow mb-5">
-            <div class="flex items-center gap-4 mb-4">
-                <img src="https://ui-avatars.com/api/?name={{ medico.nombre|default:user.username }}&background=indigo&color=fff&size=70" class="w-16 h-16 rounded-full" alt="Dr. Perfil">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-800">Dr. {{ medico.nombre }}</h2>
-                    <p class="text-indigo-600 text-sm">{{ medico.especialidad|default:"Especialista" }}</p>
-                </div>
-            </div>
-
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
+                <div class="flex flex-col items-center mb-6">
+                    <div class="relative group">
+                        <img id="preview" src="{% if medico.foto %}{{ medico.foto.url }}{% else %}https://ui-avatars.com/api/?name={{ medico.nombre|default:user.username }}&background=indigo&color=fff&size=100{% endif %}" 
+                             class="w-24 h-24 rounded-full object-cover border-4 border-indigo-500 shadow-lg mb-2" alt="Dr. Perfil">
+                        <label class="absolute bottom-2 right-0 bg-indigo-600 text-white p-2 rounded-full cursor-pointer shadow-md hover:bg-indigo-700 transition">
+                            <i class="fas fa-camera text-xs"></i>
+                            <input type="file" name="foto" accept="image/*" onchange="previewImage(event)" class="hidden">
+                        </label>
+                    </div>
+                    <div class="text-center mt-2">
+                        <h2 class="text-xl font-bold text-gray-800">Dr. {{ medico.nombre }}</h2>
+                        <p class="text-indigo-600 text-sm">{{ medico.especialidad|default:"Especialista" }}</p>
+                    </div>
+                </div>
                 <div class="space-y-4">
                     <div>
                         <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
@@ -87,6 +93,15 @@
     </main>
 
     <script>
+        // Vista previa de la foto seleccionada
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                document.getElementById('preview').src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
         // Validación para Cédula Profesional (7 u 8 dígitos numéricos)
         const cedulaInput = document.getElementById('cedula');
         const cedulaError = document.getElementById('cedula_error');

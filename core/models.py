@@ -21,6 +21,7 @@ class Paciente(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     medico_asignado = models.ForeignKey('Medico', on_delete=models.SET_NULL, null=True, blank=True, related_name='pacientes')
     nombre = models.CharField(max_length=100)
+    foto = models.ImageField(upload_to='perfiles/', null=True, blank=True)
     edad = models.IntegerField()
     telefono = models.CharField(max_length=15)
     direccion = models.TextField()
@@ -48,6 +49,7 @@ class Medico(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     nombre = models.CharField(max_length=100)
+    foto = models.ImageField(upload_to='perfiles/', null=True, blank=True)
     cedula = models.CharField(max_length=12, blank=True, null=True)
     especialidad = models.CharField(max_length=100)
     telefono = models.CharField(max_length=15)

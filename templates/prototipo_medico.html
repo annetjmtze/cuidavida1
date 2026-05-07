@@ -68,8 +68,6 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen max-w-md mx-auto">
-    <a href="{% url 'logout' %}">Cerrar sesión</a>
 <body class="bg-gray-100 min-h-screen max-w-md mx-auto relative">
     <!-- Header Médico con gradiente profesional -->
     <header class="bg-gradient-to-r from-indigo-700 to-blue-800 text-white p-4 sticky top-0 z-50 shadow-lg">
@@ -91,7 +89,12 @@
                     <i class="fas fa-bell text-lg"></i>
                     <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center border-2 border-white">4</span>
                 </button>
-                <img src="https://ui-avatars.com/api/?name={{ medico.nombre|default:user.username }}&background=ffffff&color=1e3a8a&bold=true&size=40" class="w-10 h-10 rounded-full border-2 border-white shadow-md" alt="Dr. Perfil">
+                <div class="group relative">
+                    <img src="{% if medico.foto %}{{ medico.foto.url }}{% else %}https://ui-avatars.com/api/?name={{ medico.nombre|default:user.username }}&background=ffffff&color=1e3a8a&bold=true&size=40{% endif %}" class="w-10 h-10 rounded-full border-2 border-white shadow-md cursor-pointer object-cover" alt="Dr. Perfil">
+                    <div class="absolute right-0 top-full pt-2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-300 delay-150 group-hover:delay-0">
+                        <a href="{% url 'logout' %}" class="bg-white text-red-600 text-xs py-1 px-3 rounded shadow-lg whitespace-nowrap block hover:bg-gray-50">Cerrar Sesión</a>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- Resumen rápido del médico -->
