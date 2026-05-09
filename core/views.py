@@ -5,8 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db import transaction
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 # 🔹 IMPORTAR MODELOS
-from .models import Perfil, Paciente, Medico, CodigoPostal, Receta
+from .models import Perfil, Paciente, Medico, CodigoPostal, Receta, Cita
 
 
 # 🔹 LOGOUT
@@ -157,9 +158,22 @@ def dashboard(request):
     if perfil.tipo == 'medico':
         medico = request.user.medico
         pacientes = medico.pacientes.all()
+        hoy = timezone.now().date()
+        citas_hoy = medico.citas_medico.filter(fecha=hoy).order_by('hora')
+        proximas_citas = medico.citas_medico.filter(fecha__gt=hoy).order_by('fecha', 'hora')
+        recetas_emitidas = Receta.objects.filter(medico=medico).order_by('-fecha')
+        
+        # Estadísticas dinámicas para el médico
+        pendientes_hoy = citas_hoy.filter(estatus='pendiente').count()
+        
         return render(request, 'prototipo_medico.html', {
             'pacientes': pacientes,
-            'medico': medico
+            'medico': medico,
+            'citas_hoy': citas_hoy,
+            'proximas_citas': proximas_citas,
+            'recetas_emitidas': recetas_emitidas,
+            'total_hoy': citas_hoy.count(),
+            'pendientes_hoy': pendientes_hoy
         })
     else:
         # Obtenemos el objeto paciente para pasar sus datos al HTML
@@ -168,6 +182,9 @@ def dashboard(request):
             'paciente': paciente,
             'edad': paciente.edad if paciente else "N/A",
             'tipo_sangre': paciente.tipo_sangre if paciente else "N/A",
+            # Citas futuras/hoy para el dashboard principal
+            'citas': paciente.citas.filter(fecha__gte=timezone.now().date()).order_by('fecha', 'hora') if paciente else [],
+            'past_citas': paciente.citas.filter(fecha__lt=timezone.now().date()).order_by('-fecha', '-hora') if paciente else [], # Citas pasadas para el historial
             'recetas': paciente.recetas.all().order_by('-fecha') if paciente else [],
         }
         return render(request, 'prototipo.html', context)
@@ -187,6 +204,50 @@ def enviar_receta(request, paciente_id):
         medico=request.user.medico,
         medicamentos=medicamentos,
         indicaciones=indicaciones
+    )
+    return redirect('dashboard')
+
+@login_required
+@require_POST
+def programar_cita(request):
+    perfil = request.user.perfil
+    fecha = request.POST.get('fecha')
+    hora = request.POST.get('hora')
+    motivo = request.POST.get('motivo')
+
+    if perfil.tipo == 'paciente':
+        paciente = request.user.paciente
+        medico = paciente.medico_asignado
+        estatus = 'pendiente'
+    elif perfil.tipo == 'medico':
+        medico = request.user.medico
+        paciente_id = request.POST.get('paciente_id')
+        try:
+            paciente = medico.pacientes.get(id=paciente_id)
+        except (Paciente.DoesNotExist, ValueError):
+            return redirect('dashboard')
+        estatus = 'confirmada'
+    else:
+        return JsonResponse({'success': False, 'error': 'No autorizado'})
+
+    if not medico:
+        return redirect('dashboard')
+
+    # 🔹 Validación de horario laboral (8 AM a 7 PM)
+    if hora < '08:00' or hora > '19:00':
+        return redirect('dashboard')
+
+    # 🔹 Validación de conflicto de citas (mismo médico, misma fecha y hora)
+    if Cita.objects.filter(medico=medico, fecha=fecha, hora=hora).exists():
+        return redirect('dashboard')
+
+    Cita.objects.create(
+        paciente=paciente,
+        medico=medico,
+        fecha=fecha,
+        hora=hora,
+        motivo=motivo,
+        estatus=estatus
     )
     return redirect('dashboard')
 #MUCHAS DUDAS AQUÍ-----------------------------------------------
@@ -226,7 +287,6 @@ def perfil_medico_view(request):
 
 # 🔹 API PARA VALIDAR CÓDIGO POSTAL
 def buscar_cp(request):
-    cp = request.GET.get('cp')
     cp = request.GET.get('cp', '').strip()
     
     # Esto aparecerá en tu terminal donde corres el server

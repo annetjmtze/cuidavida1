@@ -82,3 +82,15 @@ class Receta(models.Model):
 
     def __str__(self):
         return f"Receta para {self.paciente.nombre} - {self.fecha.strftime('%d/%m/%Y')}"
+
+# 🔹 Modelo para Citas Médicas
+class Cita(models.Model):
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE, related_name='citas')
+    medico = models.ForeignKey(Medico, on_delete=models.CASCADE, related_name='citas_medico')
+    fecha = models.DateField()
+    hora = models.TimeField()
+    motivo = models.TextField(blank=True, null=True)
+    estatus = models.CharField(max_length=20, default='pendiente') # pendiente, confirmada, cancelada
+
+    def __str__(self):
+        return f"Cita: {self.paciente.nombre} con Dr. {self.medico.nombre} el {self.fecha}"
