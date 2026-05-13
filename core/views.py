@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -6,8 +6,10 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
 # 🔹 IMPORTAR MODELOS
-from .models import Perfil, Paciente, Medico, CodigoPostal, Receta, Cita
+from .models import Perfil, Paciente, Medico, CodigoPostal, Receta, Cita, ContactoEmergencia
 
 
 # 🔹 LOGOUT
@@ -24,32 +26,52 @@ def wizard(request):
             # Obtenemos el perfil del paciente del usuario actual
             paciente = request.user.paciente
             
-            # Asignamos los datos del formulario al objeto paciente
-            paciente.nombre = request.POST.get("nombre")
-            paciente.edad = request.POST.get("edad")
-            paciente.curp = request.POST.get("curp")
-            paciente.fecha_nacimiento = request.POST.get("fecha_nacimiento")
-            paciente.sexo = request.POST.get("sexo")
-            paciente.tipo_sangre = request.POST.get("tipo_sangre")
+            # Limpieza y asignación de datos
+            edad_raw = request.POST.get("edad", "0")
+            paciente.nombre = request.POST.get("nombre", "").strip()
+            paciente.edad = int(edad_raw) if edad_raw.isdigit() else 0
+            paciente.curp = request.POST.get("curp", "").strip().upper()
+            paciente.fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
+            paciente.sexo = request.POST.get("sexo", "").strip()
+            paciente.tipo_sangre = request.POST.get("tipo_sangre", "").strip()
+
+            # Actualizar el correo en el modelo User si se proporciona
+            nuevo_correo = request.POST.get("correo", "").strip()
+            if nuevo_correo:
+                request.user.email = nuevo_correo
+                request.user.save()
             
-            # Para las enfermedades (checkboxes), usamos getlist
-            enfermedades = request.POST.getlist("enfermedades")
-            paciente.enfermedades = ", ".join(enfermedades)
-            
-            paciente.antecedentes = request.POST.get("antecedentes")
-            paciente.medicamentos = request.POST.get("medicamentos")
-            paciente.telefono = request.POST.get("telefono")
-            paciente.cp = request.POST.get("cp")
-            paciente.estado = request.POST.get("estado")
-            paciente.municipio = request.POST.get("municipio")
-            paciente.colonia = request.POST.get("colonia")
-            paciente.direccion = request.POST.get("direccion")
-            paciente.hospital = request.POST.get("hospital")
-            paciente.num_seguro = request.POST.get("seguro")
+            paciente.enfermedades = ", ".join(request.POST.getlist("enfermedades"))
+            paciente.antecedentes = request.POST.get("antecedentes", "").strip()
+            paciente.medicamentos = request.POST.get("medicamentos", "").strip()
+            paciente.telefono = request.POST.get("telefono", "").strip()
+            paciente.cp = request.POST.get("cp", paciente.cp).strip()
+            paciente.estado = request.POST.get("estado", paciente.estado).strip()
+            paciente.municipio = request.POST.get("municipio", paciente.municipio).strip()
+            paciente.colonia = request.POST.get("colonia", paciente.colonia).strip()
+            paciente.direccion = request.POST.get("direccion", "").strip()
+            paciente.hospital = request.POST.get("hospital", "").strip()
+            paciente.num_seguro = request.POST.get("seguro", "").strip()
             
             # Procesar foto si se subió una nueva
             if request.FILES.get("foto"):
                 paciente.foto = request.FILES.get("foto")
+
+            # Procesar contactos de emergencia
+            # Para simplificar el prototipo, reemplazamos los contactos anteriores con los nuevos
+            paciente.contactos_emergencia.all().delete()
+            c_nombres = request.POST.getlist("cont_nombre")
+            c_relaciones = request.POST.getlist("cont_relacion")
+            c_telefonos = request.POST.getlist("cont_telefono")
+
+            for n, r, t in zip(c_nombres, c_relaciones, c_telefonos):
+                if n.strip() and t.strip():
+                    ContactoEmergencia.objects.create(
+                        paciente=paciente,
+                        nombre=n.strip(),
+                        relacion=r.strip(),
+                        telefono=t.strip()
+                    )
 
             # Vincular con el médico seleccionado si existe
             medico_id = request.POST.get("medico_asignado")
@@ -64,26 +86,30 @@ def wizard(request):
             
         return redirect("dashboard")
 
+    # Obtenemos contactos existentes para pre-cargar el formulario
+    paciente = getattr(request.user, 'paciente', None)
+    contactos = paciente.contactos_emergencia.all() if paciente else []
     # Pasamos la lista de todos los médicos registrados para que el paciente elija
     medicos = Medico.objects.all()
-    return render(request, "wizard.html", {'medicos': medicos})
+    return render(request, "wizard.html", {'medicos': medicos, 'contactos': contactos, 'paciente': paciente})
 
 
 # 🔹 REGISTRO (AQUÍ ESTÁ LO IMPORTANTE 🔥)
 def registro(request):
 
     if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
-        nombre = request.POST['nombre']
-        tipo = request.POST['tipo']
-        cedula = request.POST.get('cedula', '')
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        nombre = request.POST.get('nombre', '').strip()
+        tipo = request.POST.get('tipo', '').strip()
+        cedula = request.POST.get('cedula', '').strip()
         foto = request.FILES.get('foto')
 
         try:
             with transaction.atomic():
                 # Crear usuario
-                user = User.objects.create_user(username=username, password=password)
+                user = User.objects.create_user(username=username, password=password, email=email)
 
                 # Crear perfil
                 perfil = Perfil.objects.create(user=user, tipo=tipo)
@@ -112,6 +138,16 @@ def registro(request):
             # Si algo falla (ej. cédula inválida), volvemos a mostrar el registro con el error
             return render(request, 'registro.html', {'error': 'Hubo un error al registrar: ' + str(e)})
 
+        # 🔹 Enviar correo de confirmación (Trigger)
+        if email:
+            send_mail(
+                subject='¡Bienvenido a CuidaVida!',
+                message=f'Hola {nombre},\n\nTu cuenta como {tipo} ha sido creada exitosamente. Ya puedes acceder a la plataforma.',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=True,
+            )
+
         return redirect('login')
 
     return render(request, 'registro.html')
@@ -124,8 +160,8 @@ def login_view(request):
         return redirect('dashboard')
 
     if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
 
         user = authenticate(request, username=username, password=password)
 
@@ -195,7 +231,7 @@ def enviar_receta(request, paciente_id):
     if request.user.perfil.tipo != 'medico':
         return JsonResponse({'success': False, 'error': 'No autorizado'})
     
-    paciente = Paciente.objects.get(id=paciente_id)
+    paciente = get_object_or_404(Paciente, id=paciente_id)
     medicamentos = request.POST.get('medicamentos')
     indicaciones = request.POST.get('indicaciones')
     
@@ -240,8 +276,8 @@ def programar_cita(request):
     # 🔹 Validación de conflicto de citas (mismo médico, misma fecha y hora)
     if Cita.objects.filter(medico=medico, fecha=fecha, hora=hora).exists():
         return redirect('dashboard')
-
-    Cita.objects.create(
+    
+    cita = Cita.objects.create(
         paciente=paciente,
         medico=medico,
         fecha=fecha,
@@ -262,16 +298,15 @@ def perfil_medico_view(request):
 
     if request.method == 'POST':
         # Actualizar los campos del médico con los datos del formulario
-        medico.nombre = request.POST.get('nombre', medico.nombre)
-        medico.especialidad = request.POST.get('especialidad', medico.especialidad)
-        medico.telefono = request.POST.get('telefono', medico.telefono)
-        medico.direccion = request.POST.get('direccion', medico.direccion)
-        medico.cedula = request.POST.get('cedula', medico.cedula)
-        # Guardar los nuevos campos de dirección
-        medico.cp = request.POST.get('cp', medico.cp)
-        medico.estado = request.POST.get('estado', medico.estado)
-        medico.municipio = request.POST.get('municipio', medico.municipio)
-        medico.colonia = request.POST.get('colonia', medico.colonia)
+        medico.nombre = request.POST.get('nombre', medico.nombre).strip()
+        medico.especialidad = request.POST.get('especialidad', medico.especialidad).strip()
+        medico.telefono = request.POST.get('telefono', medico.telefono).strip()
+        medico.direccion = request.POST.get('direccion', medico.direccion).strip()
+        medico.cedula = request.POST.get('cedula', medico.cedula).strip()
+        medico.cp = request.POST.get('cp', medico.cp).strip()
+        medico.estado = request.POST.get('estado', medico.estado).strip()
+        medico.municipio = request.POST.get('municipio', medico.municipio).strip()
+        medico.colonia = request.POST.get('colonia', medico.colonia).strip()
 
         # Procesar foto si se subió una nueva
         if request.FILES.get('foto'):

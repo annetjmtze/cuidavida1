@@ -51,19 +51,19 @@ to { transform: translateY(0); opacity: 1; }
 
 <!-- FOTO -->
 <div class="flex flex-col items-center mb-4">
-<img id="preview" src="https://via.placeholder.com/100"
+<img id="preview" src="{% if paciente.foto %}{{ paciente.foto.url }}{% else %}https://via.placeholder.com/100{% endif %}"
 class="w-24 h-24 rounded-full object-cover border-4 border-blue-500 mb-2">
 
 <input type="file" name="foto" accept="image/*" onchange="previewImage(event)" class="text-sm">
 </div>
 <!--1. PRIMERA VALIDACIÓN SENCILLA, NOMBRE COMPLETO EXTENSIÓN MÁXIMA DE 100, MINIMA DE 2
 AQUÍ ES SENCILLO PORQUE ES DENTRO DEL INPUT, NO NECESITA FUNCIONES-->
-<input name="nombre" class="w-full p-3 border rounded-xl mb-3" placeholder="Nombre completo" maxlength="100" minlength="2" required>
+<input name="nombre" value="{{ paciente.nombre }}" class="w-full p-3 border rounded-xl mb-3" placeholder="Nombre completo" maxlength="100" minlength="2" required>
 
 <!-- 2. SEGUNDA VALIDACIÓNAQUÍ ESTÁ EL CAMPO EN DONDE SE PIDE LA CURP
  AQUÍ ASIGNAMOS UN ID, SOLICITAMOS EL DATO, Y CREAMOS UN SPAN PARA MOSTRAR EL MENSAJE DE ERROR EN CASO DE
  NO INGRESAR ALGO VÁLIDO-->
-<input id="curp_input" name="curp" class="w-full p-3 border rounded-xl uppercase" placeholder="CURP" required>
+<input id="curp_input" name="curp" value="{{ paciente.curp }}" class="w-full p-3 border rounded-xl uppercase" placeholder="CURP" required>
 <p id="curp_error" class="text-red-500 text-xs mt-1 mb-3 hidden">Ingrese una CURP válida (18 caracteres).</p>
 
 <!-- TERCERA VALIDACIÓN, FECHA DE NACIMIENTO COINCIDA CON LA EDAD -->
@@ -71,24 +71,24 @@ AQUÍ ES SENCILLO PORQUE ES DENTRO DEL INPUT, NO NECESITA FUNCIONES-->
  VA A CALCULAR LA EDAD Y SI NO COINCIDE, MARCRÁ EL ERROR
  AQUÍ SOLO PEDIMOS LOS DATOS-->
 <label class="text-xs text-gray-500 ml-1">Fecha de nacimiento</label>
-<input id="fecha_nacimiento" name="fecha_nacimiento" type="date" class="w-full p-3 border rounded-xl mb-3" required>
+<input id="fecha_nacimiento" name="fecha_nacimiento" type="date" value="{{ paciente.fecha_nacimiento|date:'Y-m-d' }}" class="w-full p-3 border rounded-xl mb-3" required>
 
-<input id="edad_input" name="edad" type="number" class="w-full p-3 border rounded-xl" placeholder="Edad" required>
+<input id="edad_input" name="edad" type="number" value="{{ paciente.edad }}" class="w-full p-3 border rounded-xl" placeholder="Edad" required>
 <p id="age_error" class="text-red-500 text-xs mt-1 mb-3 hidden">La edad ingresada no coincide con la fecha de nacimiento.</p>
 
 <select name="sexo" class="w-full p-3 border rounded-xl mb-3">
-<option>Selecciona sexo</option>
-<option>Masculino</option>
-<option>Femenino</option>
-<option>Otro</option>
+<option value="">Selecciona sexo</option>
+<option {% if paciente.sexo == "Masculino" %}selected{% endif %}>Masculino</option>
+<option {% if paciente.sexo == "Femenino" %}selected{% endif %}>Femenino</option>
+<option {% if paciente.sexo == "Otro" %}selected{% endif %}>Otro</option>
 </select>
 
 <select name="tipo_sangre" class="w-full p-3 border rounded-xl">
-<option>Tipo de sangre</option>
-<option>O+</option>
-<option>O-</option>
-<option>A+</option>
-<option>B+</option>
+<option value="">Tipo de sangre</option>
+<option {% if paciente.tipo_sangre == "O+" %}selected{% endif %}>O+</option>
+<option {% if paciente.tipo_sangre == "O-" %}selected{% endif %}>O-</option>
+<option {% if paciente.tipo_sangre == "A+" %}selected{% endif %}>A+</option>
+<option {% if paciente.tipo_sangre == "B+" %}selected{% endif %}>B+</option>
 </select>
 
 </div>
@@ -101,18 +101,18 @@ AQUÍ ES SENCILLO PORQUE ES DENTRO DEL INPUT, NO NECESITA FUNCIONES-->
 
 <div class="grid grid-cols-2 gap-2 mb-4 text-sm">
 
-<label><input type="checkbox" name="enfermedades" value="diabetes"> Diabetes</label>
-<label><input type="checkbox" name="enfermedades" value="hipertension"> Hipertensión</label>
-<label><input type="checkbox" name="enfermedades" value="asma"> Asma</label>
-<label><input type="checkbox" name="enfermedades" value="renal"> Enfermedad renal</label>
-<label><input type="checkbox" name="enfermedades" value="cardiacos"> Problemas cardíacos</label>
+<label><input type="checkbox" name="enfermedades" value="diabetes" {% if "diabetes" in paciente.enfermedades %}checked{% endif %}> Diabetes</label>
+<label><input type="checkbox" name="enfermedades" value="hipertension" {% if "hipertension" in paciente.enfermedades %}checked{% endif %}> Hipertensión</label>
+<label><input type="checkbox" name="enfermedades" value="asma" {% if "asma" in paciente.enfermedades %}checked{% endif %}> Asma</label>
+<label><input type="checkbox" name="enfermedades" value="renal" {% if "renal" in paciente.enfermedades %}checked{% endif %}> Enfermedad renal</label>
+<label><input type="checkbox" name="enfermedades" value="cardiacos" {% if "cardiacos" in paciente.enfermedades %}checked{% endif %}> Problemas cardíacos</label>
 <label><input type="checkbox" id="ninguna"> Ninguna</label>
 
 </div>
 
-<textarea name="antecedentes" class="w-full p-3 border rounded-xl mb-3" placeholder="Antecedentes médicos"></textarea>
+<textarea name="antecedentes" class="w-full p-3 border rounded-xl mb-3" placeholder="Antecedentes médicos">{{ paciente.antecedentes }}</textarea>
 
-<textarea name="medicamentos" class="w-full p-3 border rounded-xl" placeholder="Medicamentos actuales"></textarea>
+<textarea name="medicamentos" class="w-full p-3 border rounded-xl" placeholder="Medicamentos actuales">{{ paciente.medicamentos }}</textarea>
 
 </div>
 
@@ -120,7 +120,7 @@ AQUÍ ES SENCILLO PORQUE ES DENTRO DEL INPUT, NO NECESITA FUNCIONES-->
 <div class="step slide-up">
 <h2 class="font-semibold text-gray-700 mb-3">Contacto</h2>
 
-<input id="phone_input" name="telefono" type="tel" class="w-full p-3 border rounded-xl" placeholder="Teléfono (10 dígitos)" maxlength="10" pattern="[0-9]{10}" required>
+<input id="phone_input" name="telefono" type="tel" value="{{ paciente.telefono }}" class="w-full p-3 border rounded-xl" placeholder="Teléfono (10 dígitos)" maxlength="10" pattern="[0-9]{10}" required>
 <p id="phone_error" class="text-red-500 text-xs mt-1 mb-3 hidden">Ingrese un teléfono válido de 10 dígitos.</p>
 
 <!--VALIDACIÓN CORREO--------------------------------------------
@@ -139,10 +139,37 @@ EL SPAN TAMBIÉN TIENE ID-->
 <input id="municipio_input" name="municipio" class="w-full p-3 border rounded-xl mb-3 bg-gray-50" placeholder="Municipio" readonly>
 
 <select id="colonia_select" name="colonia" class="w-full p-3 border rounded-xl mb-3">
-    <option value="">Selecciona Colonia</option>
+<option value="">Selecciona Colonia</option>
+{% if paciente.colonia %}<option value="{{ paciente.colonia }}" selected>{{ paciente.colonia }}</option>{% endif %}
 </select>
 
-<input name="direccion" class="w-full p-3 border rounded-xl" placeholder="Dirección">
+<input name="direccion" value="{{ paciente.direccion }}" class="w-full p-3 border rounded-xl" placeholder="Dirección">
+
+<!-- SECCIÓN DE CONTACTOS DE EMERGENCIA -->
+<div class="mt-6 pt-4 border-t border-gray-100">
+    <h3 class="font-semibold text-gray-700 mb-3">Contactos de Emergencia</h3>
+    <div id="contactos_container" class="space-y-3">
+        {% for contacto in contactos %}
+        <div class="p-3 border rounded-xl bg-gray-50 flex flex-col gap-2 relative">
+            <input name="cont_nombre" value="{{ contacto.nombre }}" class="w-full p-2 border rounded-lg text-sm" placeholder="Nombre contacto" required>
+            <div class="flex gap-2">
+                <input name="cont_relacion" value="{{ contacto.relacion }}" class="flex-1 p-2 border rounded-lg text-sm" placeholder="Relación (ej. Hija)" required>
+                <input name="cont_telefono" value="{{ contacto.telefono }}" class="flex-1 p-2 border rounded-lg text-sm" placeholder="Teléfono" required>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg">×</button>
+        </div>
+        {% empty %}
+        <div class="p-3 border rounded-xl bg-gray-50 flex flex-col gap-2">
+            <input name="cont_nombre" class="w-full p-2 border rounded-lg text-sm" placeholder="Nombre contacto">
+            <div class="flex gap-2">
+                <input name="cont_relacion" class="flex-1 p-2 border rounded-lg text-sm" placeholder="Relación (ej. Hija)">
+                <input name="cont_telefono" class="flex-1 p-2 border rounded-lg text-sm" placeholder="Teléfono">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <button type="button" onclick="agregarContacto()" class="mt-2 text-blue-600 text-xs font-semibold">+ Agregar otro contacto</button>
+</div>
 
 </div>
 
@@ -153,13 +180,13 @@ EL SPAN TAMBIÉN TIENE ID-->
 <select name="medico_asignado" class="w-full p-3 border rounded-xl mb-3">
     <option value="">Selecciona un médico de la plataforma</option>
     {% for medico in medicos %}
-        <option value="{{ medico.id }}">Dr. {{ medico.nombre }} - {{ medico.especialidad }}</option>
+        <option value="{{ medico.id }}" {% if paciente.medico_asignado_id == medico.id %}selected{% endif %}>Dr. {{ medico.nombre }} - {{ medico.especialidad }}</option>
     {% endfor %}
 </select>
 
-<input name="hospital" class="w-full p-3 border rounded-xl mb-3" placeholder="Hospital o clínica">
+<input name="hospital" value="{{ paciente.hospital }}" class="w-full p-3 border rounded-xl mb-3" placeholder="Hospital o clínica">
 
-<input name="seguro" class="w-full p-3 border rounded-xl" placeholder="Número de seguro">
+<input name="seguro" value="{{ paciente.num_seguro }}" class="w-full p-3 border rounded-xl" placeholder="Número de seguro">
 
 <p class="text-sm text-gray-500 mt-3">Verifica la información antes de guardar.</p>
 </div>
@@ -215,6 +242,14 @@ document.getElementById("next").onclick = () => {
     inputs.forEach(input => {
         if (!input.checkValidity()) {
             input.reportValidity();
+
+// Lógica de pre-carga para CP
+document.addEventListener('DOMContentLoaded', () => {
+    if (cpInput.value && cpInput.value.length === 5) {
+        const event = new Event('input', { bubbles: true });
+        cpInput.dispatchEvent(event);
+    }
+});
             stepValid = false;
         }
     });
@@ -403,6 +438,21 @@ cpInput.addEventListener("input", (e) => {
     }
 });
 
+// FUNCIÓN PARA AGREGAR CAMPOS DE CONTACTO DINÁMICAMENTE
+function agregarContacto() {
+    const container = document.getElementById("contactos_container");
+    const div = document.createElement("div");
+    div.className = "p-3 border rounded-xl bg-gray-50 flex flex-col gap-2 relative mt-3 slide-up";
+    div.innerHTML = `
+        <input name="cont_nombre" class="w-full p-2 border rounded-lg text-sm" placeholder="Nombre contacto" required>
+        <div class="flex gap-2">
+            <input name="cont_relacion" class="flex-1 p-2 border rounded-lg text-sm" placeholder="Relación (ej. Hija)" required>
+            <input name="cont_telefono" class="flex-1 p-2 border rounded-lg text-sm" placeholder="Teléfono" required>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg">×</button>
+    `;
+    container.appendChild(div);
+}
 </script>
 
 </body>

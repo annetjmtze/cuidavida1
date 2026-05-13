@@ -151,45 +151,34 @@
                     <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
                         <i class="fas fa-bell text-red-500 animate-pulse"></i> Alertas Críticas
                     </h3>
-                    <span class="text-xs text-red-500 font-medium">+2 nuevas</span>
+                    <span class="text-xs text-red-500 font-medium">
+                        {% if critical_alerts %}{{ critical_alerts|length }} nuevas{% else %}0 nuevas{% endif %}
+                    </span>
                 </div>
                 <div class="space-y-3">
+                    {% for alert in critical_alerts %}
                     <div class="bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 rounded-xl p-3 flex items-center justify-between card-shadow">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 bg-red-200 rounded-full flex items-center justify-center">
-                                <i class="fas fa-heart-broken text-red-600"></i>
+                                {% if alert.type == 'FC' %}<i class="fas fa-heart-broken text-red-600"></i>
+                                {% elif alert.type == 'SpO2' %}<i class="fas fa-lungs text-red-600"></i>
+                                {% elif alert.type == 'PA' %}<i class="fas fa-tint text-red-600"></i>
+                                {% elif alert.type == 'Temp' %}<i class="fas fa-thermometer-half text-red-600"></i>
+                                {% else %}<i class="fas fa-exclamation-triangle text-red-600"></i>
+                                {% endif %}
                             </div>
                             <div>
-                                <p class="font-bold text-gray-800 text-sm">María González · FC elevada</p>
-                                <p class="text-xs text-gray-500">142 lpm · Hace 8 min</p>
+                                <p class="font-bold text-gray-800 text-sm">{{ alert.paciente.nombre }} · {{ alert.message }}</p>
+                                <p class="text-xs text-gray-500">{{ alert.value }} · {{ alert.timestamp|timesince }}</p>
                             </div>
                         </div>
-                        <button class="bg-red-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-red-600 transition">Revisar</button>
+                        <button onclick="resolveAlert('{{ alert.id }}')" class="bg-red-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-red-600 transition">Revisar</button>
                     </div>
-                    <div class="bg-gradient-to-r from-amber-50 to-amber-100 border-l-4 border-amber-500 rounded-xl p-3 flex items-center justify-between card-shadow">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-amber-200 rounded-full flex items-center justify-center">
-                                <i class="fas fa-lungs text-amber-700"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-gray-800 text-sm">Roberto Méndez · Sat O₂ baja</p>
-                                <p class="text-xs text-gray-500">89% · Hace 15 min</p>
-                            </div>
-                        </div>
-                        <button class="bg-amber-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-amber-600 transition">Atender</button>
+                    {% empty %}
+                    <div class="bg-white rounded-xl p-6 text-center card-shadow">
+                        <p class="text-gray-400 text-sm italic">No hay alertas críticas pendientes.</p>
                     </div>
-                    <div class="bg-white border-l-4 border-blue-300 rounded-xl p-3 flex items-center justify-between card-shadow opacity-80">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-pills text-blue-600"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-gray-800 text-sm">Luisa Fernández · Incumplimiento dosis</p>
-                                <p class="text-xs text-gray-500">Medicación matutina omitida</p>
-                            </div>
-                        </div>
-                        <button class="bg-blue-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold">Contactar</button>
-                    </div>
+                    {% endfor %}
                 </div>
             </section>
 
@@ -497,6 +486,32 @@
         function closePatientModal() { document.getElementById('patient-modal').classList.add('hidden'); }
         
         function switchModalTab(tab) {
+            // Función para resolver una alerta (AJAX)
+            function resolveAlert(alertId) {
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                fetch(`/resolve-vital-alert/${alertId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrftoken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Alerta resuelta:', data.message);
+                        // Recargar la página o eliminar la alerta del DOM
+                        location.reload(); // Para simplificar, recargamos
+                    } else {
+                        console.error('Error al resolver alerta:', data.error);
+                        alert('Error al resolver alerta: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error de red al resolver alerta:', error);
+                    alert('Error de red al resolver alerta.');
+                });
+            }
             // Ocultar todos los contenidos de las pestañas del modal
             document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.add('hidden'));
             // Quitar estilos activos de todos los botones de las pestañas del modal

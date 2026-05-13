@@ -94,3 +94,12 @@ class Cita(models.Model):
 
     def __str__(self):
         return f"Cita: {self.paciente.nombre} con Dr. {self.medico.nombre} el {self.fecha}"
+
+class ContactoEmergencia(models.Model):
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE, related_name='contactos_emergencia')
+    nombre = models.CharField(max_length=100)
+    relacion = models.CharField(max_length=50)
+    telefono = models.CharField(max_length=15)
+
+    def __str__(self):
+        return f"{self.nombre} ({self.relacion}) - {self.paciente.nombre}"
