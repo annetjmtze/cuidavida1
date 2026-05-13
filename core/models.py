@@ -103,3 +103,14 @@ class ContactoEmergencia(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.relacion}) - {self.paciente.nombre}"
+
+class Valoracion(models.Model):
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
+    medico = models.ForeignKey(Medico, on_delete=models.CASCADE, related_name='valoraciones')
+    cita = models.OneToOneField(Cita, on_delete=models.CASCADE, related_name='valoracion', null=True)
+    puntuacion = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comentario = models.TextField(blank=True, null=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.puntuacion}* para {self.medico.nombre} por {self.paciente.nombre}"

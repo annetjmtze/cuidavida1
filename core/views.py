@@ -8,8 +8,9 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import Avg
 # 🔹 IMPORTAR MODELOS
-from .models import Perfil, Paciente, Medico, CodigoPostal, Receta, Cita, ContactoEmergencia
+from .models import Perfil, Paciente, Medico, CodigoPostal, Receta, Cita, ContactoEmergencia, Valoracion
 
 
 # 🔹 LOGOUT
@@ -201,6 +202,9 @@ def dashboard(request):
         
         # Estadísticas dinámicas para el médico
         pendientes_hoy = citas_hoy.filter(estatus='pendiente').count()
+        rating_promedio = Valoracion.objects.filter(medico=medico).aggregate(Avg('puntuacion'))['puntuacion__avg'] or 0
+        total_valoraciones = Valoracion.objects.filter(medico=medico).count()
+        ultimas_valoraciones = Valoracion.objects.filter(medico=medico).order_by('-fecha')[:5]
         
         return render(request, 'prototipo_medico.html', {
             'pacientes': pacientes,
@@ -209,7 +213,10 @@ def dashboard(request):
             'proximas_citas': proximas_citas,
             'recetas_emitidas': recetas_emitidas,
             'total_hoy': citas_hoy.count(),
-            'pendientes_hoy': pendientes_hoy
+            'pendientes_hoy': pendientes_hoy,
+            'rating_promedio': round(rating_promedio, 1),
+            'total_valoraciones': total_valoraciones,
+            'ultimas_valoraciones': ultimas_valoraciones
         })
     else:
         # Obtenemos el objeto paciente para pasar sus datos al HTML
@@ -338,3 +345,16 @@ def buscar_cp(request):
         return JsonResponse({'success': True, 'data': data})
     
     return JsonResponse({'success': False, 'error': 'Código postal no encontrado'})
+
+@login_required
+@require_POST
+def valorar_medico(request, cita_id):
+    cita = get_object_or_404(Cita, id=cita_id, paciente__user=request.user)
+    puntuacion = request.POST.get('puntuacion')
+    comentario = request.POST.get('comentario', '')
+
+    Valoracion.objects.update_or_create(
+        cita=cita,
+        defaults={'paciente': cita.paciente, 'medico': cita.medico, 'puntuacion': puntuacion, 'comentario': comentario}
+    )
+    return redirect('dashboard')

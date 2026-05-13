@@ -268,6 +268,11 @@
                         </div>
                         <span class="text-[10px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-full font-medium capitalize">{{ cita.estatus }}</span>
                     </div>
+                    {% if not cita.valoracion %}
+                    <button onclick="openRatingModal('{{ cita.id }}', '{{ cita.medico.nombre }}')" class="mt-2 w-full py-1.5 border border-indigo-500 text-indigo-500 text-xs font-bold rounded-lg hover:bg-indigo-50 transition">
+                        <i class="fas fa-star mr-1"></i> Valorar Atención
+                    </button>
+                    {% endif %}
                 </div>
                 {% empty %}
                 <div class="bg-white rounded-xl p-6 card-shadow text-center">
@@ -526,7 +531,44 @@
         </div>
     </div>
 
+    <!-- Modal de Valoración -->
+    <div id="rating-modal" class="fixed inset-0 bg-black/50 z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full slide-up">
+            <h3 class="text-xl font-bold text-gray-800 mb-1">¿Cómo fue tu atención?</h3>
+            <p class="text-xs text-gray-500 mb-4">Con Dr. <span id="rating-doctor-name"></span></p>
+            <form id="rating-form" method="POST" action="">
+                {% csrf_token %}
+                <div class="flex justify-center gap-2 mb-4">
+                    {% for i in "12345" %}
+                    <input type="radio" name="puntuacion" id="star{{ i }}" value="{{ i }}" class="hidden" required>
+                    <label for="star{{ i }}" class="cursor-pointer text-gray-300 text-3xl transition-colors hover:text-amber-400" onclick="updateStars({{ i }})">
+                        <i class="fas fa-star star-icon"></i>
+                    </label>
+                    {% endfor %}
+                </div>
+                <textarea name="comentario" rows="3" class="w-full p-3 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 mb-4" placeholder="Escribe un breve comentario..."></textarea>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeRatingModal()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-semibold shadow-lg">Enviar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        function openRatingModal(citaId, doctorName) {
+            document.getElementById('rating-doctor-name').innerText = doctorName;
+            document.getElementById('rating-form').action = `/valorar-medico/${citaId}/`;
+            document.getElementById('rating-modal').classList.remove('hidden');
+        }
+        function closeRatingModal() { document.getElementById('rating-modal').classList.add('hidden'); }
+        function updateStars(rating) {
+            const stars = document.querySelectorAll('.star-icon');
+            stars.forEach((star, i) => {
+                star.parentElement.classList.toggle('text-amber-400', i < rating);
+                star.parentElement.classList.toggle('text-gray-300', i >= rating);
+            });
+        }
         function toggleNotifications() {
             const modal = document.getElementById('notification-modal');
             modal.classList.toggle('hidden');

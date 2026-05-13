@@ -35,6 +35,7 @@ urlpatterns = [
     path('enviar-receta/<int:paciente_id>/', views.enviar_receta, name='enviar_receta'),
     path('perfil-medico/', views.perfil_medico_view, name='perfil_medico'),
     path('programar-cita/', views.programar_cita, name='programar_cita'),
+    path('valorar-medico/<int:cita_id>/', views.valorar_medico, name='valorar_medico'),
 ]
 
 if settings.DEBUG:
