@@ -197,7 +197,7 @@ def dashboard(request):
         hoy = timezone.now().date()
         citas_hoy = medico.citas_medico.filter(fecha=hoy).order_by('hora')
         proximas_citas = medico.citas_medico.filter(fecha__gt=hoy).order_by('fecha', 'hora')
-        recetas_emitidas = Receta.objects.filter(medico=medico).order_by('-fecha')
+        recetas_emitidas = Receta.objects.filter(medico=medico).order_by('paciente__nombre', '-fecha')
         
         # Estadísticas dinámicas para el médico
         pendientes_hoy = citas_hoy.filter(estatus='pendiente').count()
