@@ -36,6 +36,11 @@ urlpatterns = [
     path('perfil-medico/', views.perfil_medico_view, name='perfil_medico'),
     path('programar-cita/', views.programar_cita, name='programar_cita'),
     path('valorar-medico/<int:cita_id>/', views.valorar_medico, name='valorar_medico'),
+    path('crear-alerta/', views.crear_alerta, name='crear_alerta'),
+    path('resolve-vital-alert/<int:alert_id>/', views.resolver_alerta, name='resolver_alerta'),
+    # Nueva URL para descargar el PDF de la receta
+    path('receta-pdf/<int:receta_id>/', views.download_receta_pdf, name='download_receta_pdf'),
+
 ]
 
 if settings.DEBUG:

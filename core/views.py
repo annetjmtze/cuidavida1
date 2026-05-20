@@ -1,16 +1,24 @@
+import os
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.http import HttpResponse # Import HttpResponse for PDF serving
 from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
+from django.core.files.base import ContentFile
 from django.db.models import Avg
 # 🔹 IMPORTAR MODELOS
-from .models import Perfil, Paciente, Medico, CodigoPostal, Receta, Cita, ContactoEmergencia, Valoracion
+
+# For PDF generation
+import io
+from django.template.loader import get_template
+from xhtml2pdf import pisa # Make sure to install xhtml2pdf: pip install xhtml2pdf
+from .models import Perfil, Paciente, Medico, CodigoPostal, Receta, Cita, ContactoEmergencia, Valoracion, Alerta
 
 
 # 🔹 LOGOUT
@@ -205,6 +213,16 @@ def dashboard(request):
         rating_promedio = Valoracion.objects.filter(medico=medico).aggregate(Avg('puntuacion'))['puntuacion__avg'] or 0
         total_valoraciones = Valoracion.objects.filter(medico=medico).count()
         ultimas_valoraciones = Valoracion.objects.filter(medico=medico).order_by('-fecha')[:5]
+
+        # Alertas críticas pendientes (no resueltas) para el médico
+        critical_alerts = Alerta.objects.filter(medico=medico, resuelto=False).order_by('-timestamp')
+
+        # Desglose de calificaciones para la pestaña de estadísticas
+        rating_dist = []
+        for i in range(5, 0, -1):
+            count = Valoracion.objects.filter(medico=medico, puntuacion=i).count()
+            percentage = (count / total_valoraciones * 100) if total_valoraciones > 0 else 0
+            rating_dist.append({'stars': i, 'count': count, 'percentage': round(percentage, 1)})
         
         return render(request, 'prototipo_medico.html', {
             'pacientes': pacientes,
@@ -216,7 +234,11 @@ def dashboard(request):
             'pendientes_hoy': pendientes_hoy,
             'rating_promedio': round(rating_promedio, 1),
             'total_valoraciones': total_valoraciones,
-            'ultimas_valoraciones': ultimas_valoraciones
+            'ultimas_valoraciones': ultimas_valoraciones,
+            'critical_alerts': critical_alerts,
+            'rating_dist': rating_dist,
+            'total_pacientes': pacientes.count(),
+            'total_recetas': recetas_emitidas.count(),
         })
     else:
         # Obtenemos el objeto paciente para pasar sus datos al HTML
@@ -232,6 +254,24 @@ def dashboard(request):
         }
         return render(request, 'prototipo.html', context)
 
+def generate_prescription_pdf(receta_id):
+    """Función auxiliar para generar el contenido binario del PDF."""
+    receta = get_object_or_404(Receta, id=receta_id)
+    template_path = 'receta_pdf_template.html'
+    context = {'receta': receta}
+    
+    # Renderizar la plantilla HTML
+    template = get_template(template_path)
+    html = template.render(context)
+
+    # Crear el archivo PDF en memoria
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), result)
+    
+    if not pdf.err:
+        return result.getvalue()
+    return None
+
 @login_required
 @require_POST
 def enviar_receta(request, paciente_id):
@@ -242,13 +282,42 @@ def enviar_receta(request, paciente_id):
     medicamentos = request.POST.get('medicamentos')
     indicaciones = request.POST.get('indicaciones')
     
-    Receta.objects.create(
+    receta = Receta.objects.create(
         paciente=paciente,
         medico=request.user.medico,
         medicamentos=medicamentos,
         indicaciones=indicaciones
     )
-    return redirect('dashboard')
+
+    # Generate PDF and save it
+    pdf_content = generate_prescription_pdf(receta.id)
+    if pdf_content:
+        # Save the PDF to the FileField
+        receta.pdf_file.save(f'receta_{receta.id}.pdf', ContentFile(pdf_content), save=True)
+        
+        # Redirect to download the PDF
+        return redirect('download_receta_pdf', receta_id=receta.id)
+    else:
+        # Handle PDF generation error, maybe redirect to dashboard with a message
+        return redirect('dashboard') # Or render an error page
+
+@login_required
+def download_receta_pdf(request, receta_id):
+    receta = get_object_or_404(Receta, id=receta_id)
+
+    # Basic permission check: only the doctor who created it or the patient it's for
+    if request.user.perfil.tipo == 'medico' and receta.medico.user != request.user:
+        return HttpResponse("No autorizado para ver esta receta.", status=403)
+    if request.user.perfil.tipo == 'paciente' and receta.paciente.user != request.user:
+        return HttpResponse("No autorizado para ver esta receta.", status=403)
+
+    if not receta.pdf_file:
+        return HttpResponse("El archivo PDF de esta receta no está disponible.", status=404)
+
+    filename = os.path.basename(receta.pdf_file.name)
+    response = HttpResponse(receta.pdf_file.read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
 
 @login_required
 @require_POST
@@ -293,7 +362,42 @@ def programar_cita(request):
         estatus=estatus
     )
     return redirect('dashboard')
-#MUCHAS DUDAS AQUÍ-----------------------------------------------
+
+@login_required
+@require_POST
+def crear_alerta(request):
+    """API para que el paciente cree una alerta (manual o automática)"""
+    paciente = getattr(request.user, 'paciente', None)
+    if not paciente or not paciente.medico_asignado:
+        return JsonResponse({'success': False, 'error': 'Paciente o médico no encontrados'})
+    
+    tipo = request.POST.get('type', 'EMG')
+    mensaje = request.POST.get('message', '¡Emergencia! El paciente solicita ayuda inmediata.')
+    valor = request.POST.get('value', 'Urgente')
+    
+    Alerta.objects.create(
+        paciente=paciente,
+        medico=paciente.medico_asignado,
+        type=tipo,
+        message=mensaje,
+        value=valor,
+        resuelto=False
+    )
+    return JsonResponse({'success': True})
+
+@login_required
+@require_POST
+def resolver_alerta(request, alert_id):
+    """El médico marca la alerta como revisada"""
+    if request.user.perfil.tipo != 'medico':
+        return JsonResponse({'success': False, 'error': 'No autorizado'})
+    
+    alerta = get_object_or_404(Alerta, id=alert_id, medico=request.user.medico)
+    alerta.resuelto = True
+    alerta.save()
+    return JsonResponse({'success': True, 'message': 'Alerta resuelta'})
+
+ #MUCHAS DUDAS AQUÍ-----------------------------------------------
 
 @login_required
 def perfil_medico_view(request):

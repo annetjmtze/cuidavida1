@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Receta Médica - CuidaVida</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            @frame content_frame {
+                left: 50pt; width: 512pt; top: 50pt; height: 692pt;
+            }
+        }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #2c3e50;
+        }
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #3498db;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 28pt;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        .subtitle {
+            font-size: 10pt;
+            color: #7f8c8d;
+            margin-top: -5px;
+        }
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #2980b9;
+            text-transform: uppercase;
+            border-bottom: 1px solid #dcdde1;
+            padding-bottom: 3px;
+            margin-bottom: 10px;
+            margin-top: 20px;
+        }
+        .medications {
+            font-size: 11pt;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: #fdfdfd;
+            min-height: 150px;
+        }
+        .footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 9pt;
+            color: #95a5a6;
+            border-top: 1px solid #ecf0f1;
+            padding-top: 10px;
+        }
+        .signature-area {
+            margin-top: 40px;
+            text-align: center;
+        }
+        .signature-line {
+            width: 200px;
+            border-top: 1px solid #2c3e50;
+            margin: 0 auto;
+            padding-top: 5px;
+        }
+        .label {
+            font-weight: bold;
+            color: #34495e;
+            font-size: 10pt;
+        }
+        .value {
+            font-size: 10pt;
+        }
+    </style>
+</head>
+<body>
+    <table class="header-table">
+        <tr>
+            <td>
+                <div class="logo">CuidaVida</div>
+                <div class="subtitle">Salud y Tecnología a tu alcance</div>
+            </td>
+            <td style="text-align: right; vertical-align: middle;">
+                <div style="font-size: 16pt; font-weight: bold; color: #34495e;">RECETA MÉDICA</div>
+                <div style="font-size: 10pt;">Folio: #{{ receta.id|stringformat:"05d" }}</div>
+                <div style="font-size: 10pt;">Fecha: {{ receta.fecha|date:"d/m/Y" }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <table style="width: 100%;">
+        <tr>
+            <td style="width: 50%; vertical-align: top;">
+                <div class="section-title">Médico</div>
+                <table>
+                    <tr><td class="label">Dr(a):</td><td class="value">{{ receta.medico.nombre }}</td></tr>
+                    <tr><td class="label">Especialidad:</td><td class="value">{{ receta.medico.especialidad|default:"Médico General" }}</td></tr>
+                    <tr><td class="label">Cédula:</td><td class="value">{{ receta.medico.cedula|default:"N/A" }}</td></tr>
+                </table>
+            </td>
+            <td style="width: 50%; vertical-align: top; padding-left: 20px;">
+                <div class="section-title">Paciente</div>
+                <table>
+                    <tr><td class="label">Nombre:</td><td class="value">{{ receta.paciente.nombre }}</td></tr>
+                    <tr><td class="label">Edad:</td><td class="value">{{ receta.paciente.edad }} años</td></tr>
+                    <tr><td class="label">Tipo Sangre:</td><td class="value">{{ receta.paciente.tipo_sangre|default:"N/A" }}</td></tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <div class="section-title">Prescripción y Medicamentos</div>
+    <div class="medications">
+        {{ receta.medicamentos|linebreaksbr }}
+    </div>
+
+    <div class="section-title">Instrucciones de Uso</div>
+    <div style="font-size: 11pt; padding: 10px; font-style: italic; color: #34495e;">
+        {{ receta.indicaciones|linebreaksbr }}
+    </div>
+
+    <div class="signature-area">
+        <div class="signature-line"></div>
+        <div style="font-weight: bold;">Dr. {{ receta.medico.nombre }}</div>
+        <div style="font-size: 9pt;">Firma del Especialista</div>
+    </div>
+
+    <div class="footer">
+        Documento generado electrónicamente por CuidaVida.<br>
+        {{ receta.medico.direccion|default:"Consultorio Privado" }} | Tel: {{ receta.medico.telefono|default:"N/A" }}
+    </div>
+</body>
+</html>

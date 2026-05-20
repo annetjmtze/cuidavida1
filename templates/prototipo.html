@@ -590,8 +590,25 @@
         }
 
         function confirmEmergency() {
-            alert('🚨 Alerta enviada a contactos de emergencia y servicios médicos.');
-            cancelEmergency();
+            const params = new URLSearchParams();
+            params.append('type', 'EMG');
+            params.append('message', '¡Emergencia! El paciente ha activado el botón de pánico.');
+            params.append('value', 'Manual');
+
+            fetch('/crear-alerta/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert('🚨 Alerta enviada exitosamente a tu médico y familiares.');
+                cancelEmergency();
+            })
+            .catch(err => alert('Hubo un problema al enviar la alerta.'));
         }
 
         function markMedicineTaken(btn) {

@@ -79,6 +79,7 @@ class Receta(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     medicamentos = models.TextField()
     indicaciones = models.TextField()
+    pdf_file = models.FileField(upload_to='recetas_pdf/', null=True, blank=True)
 
     def __str__(self):
         return f"Receta para {self.paciente.nombre} - {self.fecha.strftime('%d/%m/%Y')}"
@@ -114,3 +115,23 @@ class Valoracion(models.Model):
 
     def __str__(self):
         return f"{self.puntuacion}* para {self.medico.nombre} por {self.paciente.nombre}"
+
+class Alerta(models.Model):
+    TIPOS = (
+        ('EMG', 'Emergencia Manual'),
+        ('FC', 'Frecuencia Cardíaca'),
+        ('SpO2', 'Saturación Oxígeno'),
+        ('PA', 'Presión Arterial'),
+        ('Temp', 'Temperatura'),
+    )
+    
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE, related_name='alertas')
+    medico = models.ForeignKey(Medico, on_delete=models.CASCADE, related_name='alertas')
+    type = models.CharField(max_length=10, choices=TIPOS)
+    message = models.TextField()
+    value = models.CharField(max_length=50) # Ejemplo: "155 lpm" o "Manual"
+    resuelto = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Alerta {self.type} - {self.paciente.nombre} ({'Resuelta' if self.resuelto else 'Pendiente'})"
